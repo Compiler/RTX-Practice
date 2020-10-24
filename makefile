@@ -24,8 +24,8 @@ INC= -I $(SRC_DIR) -I $(GLAD_INC) -I $(GLFW_INC) -I $(STBIMAGE_ROOT)
 LIBS = -L $(GLFW_LIB) #-L $(BOX2D_LIB)
 LINKS = -lglfw3 -lglu32 -lopengl32 -lgdi32 #-lbox2d
 
-
-OBJS =  
+MATHS_OBJS = vec3.o
+OBJS = $(MATHS_OBJS)
 LIB_OUT_OBJS = $(patsubst %.o, $(OUT_DIR)/%.o, $(LIB_OBJS))
 ALL_SETTINGS = $(CXX) $(CXXFLAGS) $(LIBS) $(INC) 
 
@@ -44,12 +44,9 @@ ds: $(LAYER_OBJS)
 	ar ru bin/libreachengine.a $(LIB_OUT_OBJS)
 	make run
 
-$(LAYER_OBJS): $(OUT_DIR)/%.o: src/Scenes/Layers/%.cpp
+$(MATHS_OBJS): $(OUT_DIR)/%.o: src/maths/%.cpp
 	$(ALL_SETTINGS) -c $< -o $@  
 
-
-$(SCENE_OBJS): $(OUT_DIR)/%.o: src/Scenes/%.cpp
-	$(ALL_SETTINGS) -c $< -o $@  
 
 
 run: $(OUT_DIR)/$(LAUNCHER_NAME).exe
