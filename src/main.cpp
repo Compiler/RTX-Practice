@@ -1,32 +1,39 @@
 #pragma once
 #include <iostream>
 
-#include <maths/vec3.h>
-#include <maths/ray.h>
-bool rayHitSphere(const point3& sphereCenter, double sphereRadius, const ray& r);
+#include <maths/Vec3.h>
+#include <maths/Ray.h>
+double RayHitSphere(const Point3& sphereCenter, double sphereRadius, const Ray& r);
 
-void writeColor(std::ostream &out, color& pixelColor){
+void writeColor(std::ostream &out, Color& pixelColor){
 
     out << (int)(255.999 * pixelColor.x()) << ' ' << (int)(255.999 *  pixelColor.y()) << ' ' << (int)(255.999 *  pixelColor.z()) << '\n';
 
 }
 
-color rayColor(const ray& r) {
-    if (rayHitSphere(point3(0,0,-1), 0.5, r))
-        return color(1, 0, 0);
-    vec3 unit_direction = unit_vector(r.direction());
-    auto t = 0.5*(unit_direction.y() + 1.0);
-    return (1.0-t)*color(1.0, 1.0, 1.0) + t*color(0.5, 0.7, 1.0);
+Color RayColor(const Ray& r) {
+    double hit = RayHitSphere(Point3(0,0,-1), 0.5, r);
+    if (hit > 0.0) {
+        Vec3 N = unit_vector(r.at(hit) - Vec3(0,0,-1));
+        return 0.5*Color(N.x()+1, N.y()+1, N.z()+1);
+    }
+    Vec3 unit_direction = unit_vector(r.direction());
+    hit = 0.5*(unit_direction.y() + 1.0);
+    return (1.0-hit)*Color(1.0, 1.0, 1.0) + hit*Color(0.5, 0.7, 1.0);
 }
 
-bool rayHitSphere(const point3& sphereCenter, double sphereRadius, const ray& r){
-    vec3 rayStart = r.origin();
-    vec3 oc = rayStart - sphereCenter;
+double RayHitSphere(const Point3& sphereCenter, double sphereRadius, const Ray& r){
+    Vec3 RayStart = r.origin();
+    Vec3 oc = RayStart - sphereCenter;
     float a = dot(r.direction(), r.direction());
-    float b = 2.0 * dot(oc, r.direction());     
+    float halfB=  dot(oc, r.direction());     
     float c = dot(oc, oc) - sphereRadius*sphereRadius;
-    float discriminant = b*b - 4*a*c;
-    return discriminant > 0;
+    float discriminant = halfB * halfB - a*c;
+    if (discriminant < 0) {
+        return -1.0;
+    } else {
+        return (-halfB - sqrt(discriminant) ) / a;
+    }
 
 
 }
@@ -41,11 +48,11 @@ int main(){
     double viewportWidth = ASPECT_RATIO * viewportHeight;
     double focalLength = 1.0;
 
-    point3 origin = point3(0, 0, 0);
-    vec3 horizontal = vec3(viewportWidth, 0, 0);
-    vec3 vertical = vec3(0, viewportHeight, 0);
+    Point3 origin = Point3(0, 0, 0);
+    Vec3 horizontal = Vec3(viewportWidth, 0, 0);
+    Vec3 vertical = Vec3(0, viewportHeight, 0);
 
-    vec3 lowerLeftCorner = origin - horizontal / 2 - vertical / 2 - vec3(0, 0, focalLength);
+    Vec3 lowerLeftCorner = origin - horizontal / 2 - vertical / 2 - Vec3(0, 0, focalLength);
 
     std::cout << "P3\n" << IMAGE_WIDTH << " " << IMAGE_HEIGHT << "\n255\n";
 
@@ -54,8 +61,8 @@ int main(){
         for(int x = 0; x < IMAGE_WIDTH; x++){
             double u = (double(x) / (IMAGE_WIDTH - 1));
             double v = (double(y) / (IMAGE_HEIGHT - 1));
-            ray r(origin, lowerLeftCorner + u*horizontal + v*vertical - origin);
-            color pixelColor = rayColor(r);
+            Ray r(origin, lowerLeftCorner + u*horizontal + v*vertical - origin);
+            Color pixelColor = RayColor(r);
             writeColor(std::cout, pixelColor);
         }
     }
