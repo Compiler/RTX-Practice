@@ -1,17 +1,14 @@
 #pragma once
 #include <iostream>
-
+#include <stdio.h>
+#include <stdlib.h>
 #include <maths/Vec3.h>
 #include <maths/Ray.h>
+#include <RayHittables/Sphere.h>
 double RayHitSphere(const Point3& sphereCenter, double sphereRadius, const Ray& r);
 
-void writeColor(std::ostream &out, Color& pixelColor){
-
-    out << (int)(255.999 * pixelColor.x()) << ' ' << (int)(255.999 *  pixelColor.y()) << ' ' << (int)(255.999 *  pixelColor.z()) << '\n';
-
-}
-
 Color RayColor(const Ray& r) {
+    //Sphere sphere(Point3(0, 0, -1), 0.5);
     double hit = RayHitSphere(Point3(0,0,-1), 0.5, r);
     if (hit > 0.0) {
         Vec3 N = unit_vector(r.at(hit) - Vec3(0,0,-1));
@@ -23,11 +20,10 @@ Color RayColor(const Ray& r) {
 }
 
 double RayHitSphere(const Point3& sphereCenter, double sphereRadius, const Ray& r){
-    Vec3 RayStart = r.origin();
-    Vec3 oc = RayStart - sphereCenter;
-    float a = dot(r.direction(), r.direction());
+    Vec3 oc = r.origin() - sphereCenter;
+    float a = r.direction().length_squared();
     float halfB=  dot(oc, r.direction());     
-    float c = dot(oc, oc) - sphereRadius*sphereRadius;
+    float c = oc.length_squared() - sphereRadius*sphereRadius;
     float discriminant = halfB * halfB - a*c;
     if (discriminant < 0) {
         return -1.0;
@@ -54,8 +50,9 @@ int main(){
 
     Vec3 lowerLeftCorner = origin - horizontal / 2 - vertical / 2 - Vec3(0, 0, focalLength);
 
-    std::cout << "P3\n" << IMAGE_WIDTH << " " << IMAGE_HEIGHT << "\n255\n";
-
+    FILE* file;
+    file = fopen("image.ppm", "w+");
+    fprintf(file, "P3\n%d %d\n255\n", IMAGE_WIDTH, IMAGE_HEIGHT);
     for(int y = IMAGE_HEIGHT - 1; y >= 0; y--){
         std::cerr << "\rScanlines remaing: " << y << " " << std::flush;
         for(int x = 0; x < IMAGE_WIDTH; x++){
@@ -63,10 +60,13 @@ int main(){
             double v = (double(y) / (IMAGE_HEIGHT - 1));
             Ray r(origin, lowerLeftCorner + u*horizontal + v*vertical - origin);
             Color pixelColor = RayColor(r);
-            writeColor(std::cout, pixelColor);
+            int red = (int)(255.999 * pixelColor.x());
+            int green = (int)(255.999 * pixelColor.y());
+            int blue = (int)(255.999 * pixelColor.z());
+            fprintf(file, "%d %d %d\n", red, green, blue);
         }
     }
     std::cerr << "\nDone.\n";
-
+    fclose(file);
     return 0;
 }

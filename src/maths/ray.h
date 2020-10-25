@@ -3,7 +3,7 @@
 
 class Ray{
 
-    public:
+    private:
         Point3 orig;
         Vec3 dir;
     public:

@@ -31,8 +31,8 @@ ALL_SETTINGS = $(CXX) $(CXXFLAGS) $(LIBS) $(INC)
 
 
 main: $(ENTRY_POINT) $(OBJS)
-	@$(ALL_SETTINGS) -o $(OUT_DIR)/$(LAUNCHER_NAME) $^ $(GLAD_SRC)/glad.c $(LINKS)
-	@./$(OUT_DIR)/$(LAUNCHER_NAME).exe
+	$(ALL_SETTINGS) -o $(OUT_DIR)/$(LAUNCHER_NAME) $^ $(GLAD_SRC)/glad.c $(LINKS)
+	./$(OUT_DIR)/$(LAUNCHER_NAME).exe
 	
 link: $(ENTRY_POINT)
 	$(ALL_SETTINGS) -o $(OUT_DIR)/$(LAUNCHER_NAME) $(OBJS) $< $(GLAD_SRC)/glad.c $(LINKS)
