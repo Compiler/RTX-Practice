@@ -1,6 +1,6 @@
 #pragma once
-#include <maths/Ray.h>
-#include <maths/Vec3.h>
+#include <Core.h>
+
 struct HitRecord{
     Point3 point;
     Vec3 normal;

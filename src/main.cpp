@@ -2,21 +2,23 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
-#include <maths/Vec3.h>
-#include <maths/Ray.h>
+#include <Core.h>
+
 #include <RayHittables/Sphere.h>
+#include <RayHittables/HittableList.h>
+
+
+
 double RayHitSphere(const Point3& sphereCenter, double sphereRadius, const Ray& r);
 
-Color RayColor(const Ray& r) {
-    //Sphere sphere(Point3(0, 0, -1), 0.5);
-    double hit = RayHitSphere(Point3(0,0,-1), 0.5, r);
-    if (hit > 0.0) {
-        Vec3 N = unit_vector(r.at(hit) - Vec3(0,0,-1));
-        return 0.5*Color(N.x()+1, N.y()+1, N.z()+1);
+Color RayColor(const Ray& r, const Hittable& world) {
+    HitRecord rec;
+    if (world.hit(r, 0, _INFINITY_, rec)) {
+        return 0.5 * (rec.normal + Color(1,1,1));
     }
     Vec3 unit_direction = unit_vector(r.direction());
-    hit = 0.5*(unit_direction.y() + 1.0);
-    return (1.0-hit)*Color(1.0, 1.0, 1.0) + hit*Color(0.5, 0.7, 1.0);
+    auto t = 0.5*(unit_direction.y() + 1.0);
+    return (1.0-t)*Color(1.0, 1.0, 1.0) + t*Color(0.5, 0.7, 1.0);
 }
 
 double RayHitSphere(const Point3& sphereCenter, double sphereRadius, const Ray& r){
@@ -35,6 +37,11 @@ double RayHitSphere(const Point3& sphereCenter, double sphereRadius, const Ray& 
 }
 
 int main(){
+
+
+    HittableList world;
+    world.add(make_shared<Sphere>(Point3(0,0,-1), 0.5));
+    world.add(make_shared<Sphere>(Point3(0,-100.5,-1), 100));
 
     constexpr double ASPECT_RATIO = 16.0/9.0;
     constexpr int IMAGE_WIDTH = 400;
@@ -59,7 +66,7 @@ int main(){
             double u = (double(x) / (IMAGE_WIDTH - 1));
             double v = (double(y) / (IMAGE_HEIGHT - 1));
             Ray r(origin, lowerLeftCorner + u*horizontal + v*vertical - origin);
-            Color pixelColor = RayColor(r);
+            Color pixelColor = RayColor(r, world);
             int red = (int)(255.999 * pixelColor.x());
             int green = (int)(255.999 * pixelColor.y());
             int blue = (int)(255.999 * pixelColor.z());

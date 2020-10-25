@@ -25,7 +25,8 @@ LIBS = -L $(GLFW_LIB) #-L $(BOX2D_LIB)
 LINKS = -lglfw3 -lglu32 -lopengl32 -lgdi32 #-lbox2d
 
 MATHS_OBJS = $(OUT_DIR)/Vec3.o
-OBJS = $(MATHS_OBJS)
+HITTABLE_OBJS = $(OUT_DIR)/HittableList.o $(OUT_DIR)/Sphere.o
+OBJS = $(MATHS_OBJS) $(HITTABLE_OBJS)
 LIB_OUT_OBJS = $(patsubst %.o, $(OUT_DIR)/%.o, $(LIB_OBJS))
 ALL_SETTINGS = $(CXX) $(CXXFLAGS) $(LIBS) $(INC) 
 
@@ -46,6 +47,9 @@ ds: $(LAYER_OBJS)
 
 $(MATHS_OBJS): $(OUT_DIR)/%.o: src/maths/%.cpp
 	$(ALL_SETTINGS) -c $< -o $@  
+
+$(HITTABLE_OBJS): $(OUT_DIR)/%.o: src/RayHittables/%.cpp
+	$(ALL_SETTINGS) -c $< -o $@  	
 
 
 
