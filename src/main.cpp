@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <Core.h>
+#include <maths/Camera.h>
 
 #include <RayHittables/Sphere.h>
 #include <RayHittables/HittableList.h>
@@ -47,15 +48,9 @@ int main(){
     constexpr int IMAGE_WIDTH = 400;
     constexpr int IMAGE_HEIGHT = IMAGE_WIDTH / ASPECT_RATIO;
 
-    double viewportHeight = 2.0;
-    double viewportWidth = ASPECT_RATIO * viewportHeight;
-    double focalLength = 1.0;
+   constexpr int SPP = 100;
 
-    Point3 origin = Point3(0, 0, 0);
-    Vec3 horizontal = Vec3(viewportWidth, 0, 0);
-    Vec3 vertical = Vec3(0, viewportHeight, 0);
-
-    Vec3 lowerLeftCorner = origin - horizontal / 2 - vertical / 2 - Vec3(0, 0, focalLength);
+   Camera camera;
 
     FILE* file;
     file = fopen("image.ppm", "w+");
@@ -63,13 +58,25 @@ int main(){
     for(int y = IMAGE_HEIGHT - 1; y >= 0; y--){
         std::cerr << "\rScanlines remaing: " << y << " " << std::flush;
         for(int x = 0; x < IMAGE_WIDTH; x++){
-            double u = (double(x) / (IMAGE_WIDTH - 1));
-            double v = (double(y) / (IMAGE_HEIGHT - 1));
-            Ray r(origin, lowerLeftCorner + u*horizontal + v*vertical - origin);
-            Color pixelColor = RayColor(r, world);
-            int red = (int)(255.999 * pixelColor.x());
-            int green = (int)(255.999 * pixelColor.y());
-            int blue = (int)(255.999 * pixelColor.z());
+           Color pixelColor(0, 0, 0);
+            for (int s = 0; s < SPP; ++s) {
+                auto u = (x + random_double()) / (IMAGE_WIDTH-1);
+                auto v = (y + random_double()) / (IMAGE_HEIGHT-1);
+                Ray r = camera.getRay(u, v);
+                pixelColor += RayColor(r, world);
+            }
+            auto r = pixelColor.x();
+            auto g = pixelColor.y();
+            auto b = pixelColor.z();
+
+            // Divide the color by the number of samples.
+            auto scale = 1.0 / SPP;
+            r *= scale;
+            g *= scale;
+            b *= scale;
+            int red = (int)(256 * clamp(r, 0.0, 0.999));
+            int green = (int)(256 * clamp(g, 0.0, 0.999));
+            int blue = (int)(256 * clamp(b, 0.0, 0.999));
             fprintf(file, "%d %d %d\n", red, green, blue);
         }
     }
