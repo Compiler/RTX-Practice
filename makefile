@@ -26,12 +26,13 @@ LINKS = -lglfw3 -lglu32 -lopengl32 -lgdi32 #-lbox2d
 
 MATHS_OBJS = $(OUT_DIR)/Vec3.o $(OUT_DIR)/Camera.o $(OUT_DIR)/Ray.o
 HITTABLE_OBJS = $(OUT_DIR)/HittableList.o $(OUT_DIR)/Sphere.o
+CORE_OBJS = $(OUT_DIR)/Launcher.o
 OBJS = $(MATHS_OBJS) $(HITTABLE_OBJS)
 LIB_OUT_OBJS = $(patsubst %.o, $(OUT_DIR)/%.o, $(LIB_OBJS))
 ALL_SETTINGS = $(CXX) $(CXXFLAGS) $(LIBS) $(INC) 
 
 
-main: $(ENTRY_POINT) $(OBJS)
+main: $(CORE_OBJS) $(ENTRY_POINT) $(OBJS)
 	$(ALL_SETTINGS) -o $(OUT_DIR)/$(LAUNCHER_NAME) $^ $(GLAD_SRC)/glad.c $(LINKS)
 	./$(OUT_DIR)/$(LAUNCHER_NAME).exe
 	
@@ -44,6 +45,10 @@ ds: $(LAYER_OBJS)
 	make link
 	ar ru bin/libreachengine.a $(LIB_OUT_OBJS)
 	make run
+
+
+$(CORE_OBJS): $(OUT_DIR)/%.o: src/%.cpp
+	$(ALL_SETTINGS) -c $< -o $@  
 
 $(MATHS_OBJS): $(OUT_DIR)/%.o: src/maths/%.cpp
 	$(ALL_SETTINGS) -c $< -o $@  

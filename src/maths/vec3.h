@@ -94,4 +94,17 @@ inline Vec3 random_in_unit_sphere() {
     }
 }
 
+inline Vec3 random_unit_vector() {
+    auto a = random_double(0, 2*_PI_);
+    auto z = random_double(-1, 1);
+    auto r = sqrt(1 - z*z);
+    return Vec3(r*cos(a), r*sin(a), z);
+}
 
+inline Vec3 random_in_hemisphere(const Vec3& normal) {
+    Vec3 in_unit_sphere = random_in_unit_sphere();
+    if (dot(in_unit_sphere, normal) > 0.0) // In the same hemisphere as the normal
+        return in_unit_sphere;
+    else
+        return -in_unit_sphere;
+}

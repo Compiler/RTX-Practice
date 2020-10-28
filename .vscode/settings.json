@@ -42,6 +42,8 @@
         "vector": "cpp",
         "xlocmon": "cpp",
         "xloctime": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "cctype": "cpp",
+        "string": "cpp"
     }
 }
