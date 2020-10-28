@@ -18,7 +18,6 @@ Color RayColor(const Ray& r, const Hittable& world, int depth) {
             default: diffuse = DiffuseMethods::random_unit_vector_diffuse(); break;
         }
         Point3 target = rec.point + rec.normal + diffuse;
-;
         return 0.5 * RayColor(Ray(rec.point, target - rec.point), world, depth-1);
     }
     Vec3 unit_direction = unit_vector(r.direction());
@@ -46,6 +45,8 @@ void Launcher::launch(const char* fileName){
 
     HittableList world;
     world.add(make_shared<Sphere>(Point3(0,0,-1), 0.5));
+    world.add(make_shared<Sphere>(Point3(1,0,-1), 0.25));
+    world.add(make_shared<Sphere>(Point3(-1,0,-1), 0.25));
     world.add(make_shared<Sphere>(Point3(0,-100.5,-1), 100));
 
     constexpr double ASPECT_RATIO = 16.0/9.0;

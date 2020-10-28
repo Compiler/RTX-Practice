@@ -2,8 +2,8 @@
 
 
 
-
-Sphere::Sphere(Point3 center, double radius):_center(center), _radius(radius){}
+Sphere::Sphere(){}
+Sphere::Sphere(Point3 center, double radius, std::shared_ptr<Material> newMaterial):_center(center), _radius(radius), _material(newMaterial){}
 bool Sphere::hit(const Ray& r, double tMin, double tMax, HitRecord& record) const {
     Vec3 oc = r.origin() - _center;
     float a = dot(r.direction(), r.direction());
@@ -14,6 +14,7 @@ bool Sphere::hit(const Ray& r, double tMin, double tMax, HitRecord& record) cons
         double root = sqrt(discriminant);
 
         double temp = (-halfB - root) / a;
+        record.mat_ptr = _material;
         if(temp < tMax && temp > tMin){
             record.t = temp;
             record.point = r.at(record.t);
