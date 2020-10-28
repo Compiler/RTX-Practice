@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <Core.h>
 #include <maths/Camera.h>
+#include <maths/Vec3.h>
+#include <maths/Ray.h>
 
 #include <RayHittables/Sphere.h>
 #include <RayHittables/HittableList.h>
@@ -12,10 +14,12 @@
 
 double RayHitSphere(const Point3& sphereCenter, double sphereRadius, const Ray& r);
 
-Color RayColor(const Ray& r, const Hittable& world) {
+Color RayColor(const Ray& r, const Hittable& world, int depth) {
+    if(depth <= 0) return Color(0,0,0);
     HitRecord rec;
-    if (world.hit(r, 0, _INFINITY_, rec)) {
-        return 0.5 * (rec.normal + Color(1,1,1));
+    if (world.hit(r, 0.001, _INFINITY_, rec)) {
+        Point3 target = rec.point + rec.normal + random_in_unit_sphere();
+        return 0.5 * RayColor(Ray(rec.point, target - rec.point), world, depth-1);
     }
     Vec3 unit_direction = unit_vector(r.direction());
     auto t = 0.5*(unit_direction.y() + 1.0);
@@ -47,8 +51,8 @@ int main(){
     constexpr double ASPECT_RATIO = 16.0/9.0;
     constexpr int IMAGE_WIDTH = 400;
     constexpr int IMAGE_HEIGHT = IMAGE_WIDTH / ASPECT_RATIO;
-
-   constexpr int SPP = 100;
+    constexpr int MAX_CHILD_RAYS = 50;
+    constexpr int SPP = 100;
 
    Camera camera;
 
@@ -63,7 +67,7 @@ int main(){
                 auto u = (x + random_double()) / (IMAGE_WIDTH-1);
                 auto v = (y + random_double()) / (IMAGE_HEIGHT-1);
                 Ray r = camera.getRay(u, v);
-                pixelColor += RayColor(r, world);
+                pixelColor += RayColor(r, world, MAX_CHILD_RAYS);
             }
             auto r = pixelColor.x();
             auto g = pixelColor.y();
@@ -71,9 +75,9 @@ int main(){
 
             // Divide the color by the number of samples.
             auto scale = 1.0 / SPP;
-            r *= scale;
-            g *= scale;
-            b *= scale;
+            r = sqrt(scale * r);
+            g = sqrt(scale * g);
+            b = sqrt(scale * b);
             int red = (int)(256 * clamp(r, 0.0, 0.999));
             int green = (int)(256 * clamp(g, 0.0, 0.999));
             int blue = (int)(256 * clamp(b, 0.0, 0.999));

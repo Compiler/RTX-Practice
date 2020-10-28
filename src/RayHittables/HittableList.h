@@ -1,3 +1,4 @@
+#pragma once
 #include <RayHittables/Hittable.h>
 #include <Core.h>
 #include <memory>

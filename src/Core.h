@@ -1,11 +1,9 @@
-#ifndef RTWEEKEND_H
-#define RTWEEKEND_H
+#pragma once
 
 #include <cmath>
 #include <limits>
 #include <memory>
 #include <random>
-
 
 // Usings
 using std::shared_ptr;
@@ -38,10 +36,3 @@ inline double random_double(double min, double max) {
     // Returns a random real in [min,max).
     return min + (max-min)*random_double();
 }
-
-
-// Common Headers
-#include <maths/Ray.h>
-#include <maths/Vec3.h>
-
-#endif

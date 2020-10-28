@@ -1,23 +1,20 @@
 #pragma once
+#include <Core.h>
 #include <maths/Vec3.h>
-
 class Ray{
 
-    private:
+    public:
         Point3 orig;
         Vec3 dir;
+
     public:
-        Ray() {}
-        Ray(const Point3& origin, const Vec3& direction)
-            : orig(origin), dir(direction)
-        {}
+        Ray();
+        Ray(const Point3& origin, const Vec3& direction);
 
         Point3 origin() const  { return orig; }
         Vec3 direction() const { return dir; }
 
-        Point3 at(double t) const {
-            return orig + t*dir;
-        }
+        Point3 at(double t) const;
 
 
 
