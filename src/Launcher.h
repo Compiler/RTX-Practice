@@ -11,7 +11,9 @@
 #include <RayHittables/Sphere.h>
 #include <RayHittables/HittableList.h>
 
-
+#include <Materials/Metal.h>
+#include <Materials/Material.h>
+#include <Materials/LambertianDiffuse.h>
 
 
 class Launcher{

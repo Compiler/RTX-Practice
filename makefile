@@ -27,8 +27,8 @@ LINKS = -lglfw3 -lglu32 -lopengl32 -lgdi32 #-lbox2d
 MATHS_OBJS = $(OUT_DIR)/Vec3.o $(OUT_DIR)/Camera.o $(OUT_DIR)/Ray.o
 HITTABLE_OBJS = $(OUT_DIR)/HittableList.o $(OUT_DIR)/Sphere.o
 CORE_OBJS = $(OUT_DIR)/Launcher.o
-MATERIAL_OBJS = $(OUT_DIR)/Material.o
-OBJS = $(MATHS_OBJS) $(HITTABLE_OBJS)
+MATERIAL_OBJS = $(OUT_DIR)/LambertianDiffuse.o $(OUT_DIR)/Metal.o
+OBJS = $(MATHS_OBJS) $(HITTABLE_OBJS) $(MATERIAL_OBJS)
 LIB_OUT_OBJS = $(patsubst %.o, $(OUT_DIR)/%.o, $(LIB_OBJS))
 ALL_SETTINGS = $(CXX) $(CXXFLAGS) $(LIBS) $(INC) 
 

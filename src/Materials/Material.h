@@ -1,12 +1,13 @@
 #pragma once
+#include <Core.h>
+#include <RayHittables/Hittable.h>
 #include <maths/Ray.h>
 #include <maths/Vec3.h>
 #include <maths/Ray.h>
 
-
 class Material{
 
     public:
-        virtual bool scatter(const Ray& rayIn, const HitRecord& record, Color& attenuation, Ray& scatteredRay);
+        virtual bool scatter(const Ray& rayIn, const HitRecord& record, Color& attenuation, Ray& scatteredRay) const{}
 
 };

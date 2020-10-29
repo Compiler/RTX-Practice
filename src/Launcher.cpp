@@ -10,15 +10,11 @@ Color RayColor(const Ray& r, const Hittable& world, int depth) {
     if(depth <= 0) return Color(0,0,0);
     HitRecord rec;
     if (world.hit(r, 0.001, _INFINITY_, rec)) {
-        Vec3 diffuse;
-        switch(Launcher::DIFFUSE_TYPE){
-            case DiffuseMethods::UNIT_VECTOR_DIFFUSE: diffuse = DiffuseMethods::random_unit_vector_diffuse(); break;
-            case DiffuseMethods::UNIT_SPHERE_DIFFUSE: diffuse = DiffuseMethods::random_in_unit_sphere_diffuse(); break;
-            case DiffuseMethods::UNIT_HEMISPHERE_DIFFUSE: diffuse = DiffuseMethods::random_in_hemisphere_diffuse(rec.normal); break;
-            default: diffuse = DiffuseMethods::random_unit_vector_diffuse(); break;
-        }
-        Point3 target = rec.point + rec.normal + diffuse;
-        return 0.5 * RayColor(Ray(rec.point, target - rec.point), world, depth-1);
+        Ray scattered;
+        Color attenuation;
+        if (rec.mat_ptr->scatter(r, rec, attenuation, scattered))
+            return attenuation * RayColor(scattered, world, depth-1);
+        return Color(0,0,0);
     }
     Vec3 unit_direction = unit_vector(r.direction());
     auto t = 0.5*(unit_direction.y() + 1.0);
@@ -44,10 +40,17 @@ double RayHitSphere(const Point3& sphereCenter, double sphereRadius, const Ray& 
 void Launcher::launch(const char* fileName){
 
     HittableList world;
-    world.add(make_shared<Sphere>(Point3(0,0,-1), 0.5));
-    world.add(make_shared<Sphere>(Point3(1,0,-1), 0.25));
-    world.add(make_shared<Sphere>(Point3(-1,0,-1), 0.25));
-    world.add(make_shared<Sphere>(Point3(0,-100.5,-1), 100));
+    auto material_ground = std::make_shared<LambertianDiffuse>(Color(0.8, 0.8, 0.0));
+    auto material_center = std::make_shared<LambertianDiffuse>(Color(0.7, 0.1, 0.1));
+    auto material_left   = std::make_shared<Metal>(Color(0.5, 0.8, 0.8));
+    auto material_right  = std::make_shared<Metal>(Color(0.8, 0.6, 0.5));
+
+    world.add(std::make_shared<Sphere>(Point3( 0.0, -100.5, -1.0), 100.0, material_ground));
+
+    world.add(std::make_shared<Sphere>(Point3( 0.0,    0.0, -1.0),   0.5, material_center));
+    world.add(std::make_shared<Sphere>(Point3(-1.0,    0.0, -1.0),   0.25, material_left));
+    world.add(std::make_shared<Sphere>(Point3( 1.0,    0.0, -1.0),   0.25, material_right));
+    
 
     constexpr double ASPECT_RATIO = 16.0/9.0;
     constexpr int IMAGE_WIDTH = 400;

@@ -1,5 +1,6 @@
 #pragma once
 #include <Core.h>
+#include <memory>
 #include <maths/Vec3.h>
 #include <maths/Ray.h>
 
