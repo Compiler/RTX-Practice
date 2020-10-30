@@ -24,31 +24,26 @@ INC= -I $(SRC_DIR) -I $(GLAD_INC) -I $(GLFW_INC) -I $(STBIMAGE_ROOT)
 LIBS = -L $(GLFW_LIB) #-L $(BOX2D_LIB)
 LINKS = -lglfw3 -lglu32 -lopengl32 -lgdi32 #-lbox2d
 
+CORE_LAUNCHER_OBJS = $(OUT_DIR)/CoreLauncher.o
 MATHS_OBJS = $(OUT_DIR)/Vec3.o $(OUT_DIR)/Camera.o $(OUT_DIR)/Ray.o
 HITTABLE_OBJS = $(OUT_DIR)/HittableList.o $(OUT_DIR)/Sphere.o
 CORE_OBJS = $(OUT_DIR)/Launcher.o
 MATERIAL_OBJS = $(OUT_DIR)/LambertianDiffuse.o $(OUT_DIR)/Metal.o
-OBJS = $(MATHS_OBJS) $(HITTABLE_OBJS) $(MATERIAL_OBJS)
+OBJS = $(CORE_LAUNCHER_OBJS) $(CORE_OBJS) $(MATHS_OBJS) $(HITTABLE_OBJS) $(MATERIAL_OBJS)
 LIB_OUT_OBJS = $(patsubst %.o, $(OUT_DIR)/%.o, $(LIB_OBJS))
 ALL_SETTINGS = $(CXX) $(CXXFLAGS) $(LIBS) $(INC) 
 
 
-main: $(CORE_OBJS) $(ENTRY_POINT) $(OBJS)
+main: $(ENTRY_POINT) $(OBJS)
 	$(ALL_SETTINGS) -o $(OUT_DIR)/$(LAUNCHER_NAME) $^ $(GLAD_SRC)/glad.c $(LINKS)
 	./$(OUT_DIR)/$(LAUNCHER_NAME).exe
 	
-link: $(ENTRY_POINT)
-	$(ALL_SETTINGS) -o $(OUT_DIR)/$(LAUNCHER_NAME) $(OBJS) $< $(GLAD_SRC)/glad.c $(LINKS)
-
-
-ds: $(LAYER_OBJS) 
-	make ReachCore.o
-	make link
-	ar ru bin/libreachengine.a $(LIB_OUT_OBJS)
-	make run
 
 
 $(CORE_OBJS): $(OUT_DIR)/%.o: src/%.cpp
+	$(ALL_SETTINGS) -c $< -o $@  
+
+$(CORE_LAUNCHER_OBJS): $(OUT_DIR)/%.o: src/OtherLauncher/%.cpp
 	$(ALL_SETTINGS) -c $< -o $@  
 
 $(MATHS_OBJS): $(OUT_DIR)/%.o: src/maths/%.cpp
@@ -64,7 +59,3 @@ $(MATERIAL_OBJS): $(OUT_DIR)/%.o: src/Materials/%.cpp
 
 run: $(OUT_DIR)/$(LAUNCHER_NAME).exe
 	./$(OUT_DIR)/$(LAUNCHER_NAME).exe
-
-launch:
-	make
-	make run

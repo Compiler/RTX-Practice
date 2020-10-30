@@ -10,6 +10,7 @@ class Vec3{
 
     public:
         Vec3();
+        Vec3(double e012);
         Vec3(double e0, double e1, double e2);
         double x() const {return e[0];}
         double y() const {return e[1];}

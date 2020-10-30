@@ -1,6 +1,8 @@
 #include "Vec3.h"
 
 Vec3::Vec3() : e{0,0,0} {}
+Vec3::Vec3(double e012) : e{e012, e012,e012}{}
+
 Vec3::Vec3(double e0, double e1, double e2) : e{e0, e1, e2} {}
 
 Vec3 Vec3::operator-() const { return Vec3(-e[0], -e[1], -e[2]); }
