@@ -5,7 +5,7 @@ int main(){
 
 
     Launcher launcher;
-    launcher.launch("MaterialsRecent.ppm");
+    launcher.launch("_Current_Image_.ppm");
     // Launcher::DIFFUSE_TYPE = DiffuseMethods::UNIT_HEMISPHERE_DIFFUSE;
     // launcher.launch("UNIT_HEMISPHERE_DIFFUSE.ppm");
     // Launcher::DIFFUSE_TYPE = DiffuseMethods::UNIT_SPHERE_DIFFUSE;

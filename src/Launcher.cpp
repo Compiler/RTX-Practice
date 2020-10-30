@@ -40,10 +40,15 @@ double RayHitSphere(const Point3& sphereCenter, double sphereRadius, const Ray& 
 void Launcher::launch(const char* fileName){
 
     HittableList world;
+    for(double i = -1;i < 1; i+= 0.1){
+        double cVal = (i+1) / 2.0;
+        auto material_back   = std::make_shared<Metal>(Color(cVal,cVal,cVal));
+        world.add(std::make_shared<Sphere>(Point3( i, -0.25, -0.25), 0.05, material_back));
+    }
     auto material_ground = std::make_shared<LambertianDiffuse>(Color(0.8, 0.8, 0.0));
     auto material_center = std::make_shared<LambertianDiffuse>(Color(0.7, 0.1, 0.1));
-    auto material_left   = std::make_shared<Metal>(Color(0.5, 0.8, 0.8));
-    auto material_right  = std::make_shared<Metal>(Color(0.8, 0.6, 0.5));
+    auto material_left   = std::make_shared<Metal>(Color(0.5, 0.8, 0.8), 0.3);
+    auto material_right  = std::make_shared<Metal>(Color(0.8, 0.6, 0.8), 0.0);
 
     world.add(std::make_shared<Sphere>(Point3( 0.0, -100.5, -1.0), 100.0, material_ground));
 
@@ -62,6 +67,7 @@ void Launcher::launch(const char* fileName){
 
     FILE* file;
     file = fopen(fileName, "w+");
+    std::cout << "'" << fileName << "'\n";
     fprintf(file, "P3\n%d %d\n255\n", IMAGE_WIDTH, IMAGE_HEIGHT);
     for(int y = IMAGE_HEIGHT - 1; y >= 0; y--){
         std::cerr << "\rScanlines remaing: " << y << " " << std::flush;
