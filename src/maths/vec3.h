@@ -32,6 +32,11 @@ class Vec3{
             return Vec3(random_double(min,max), random_double(min,max), random_double(min,max));
         }
 
+
+        inline void print(bool newLine = true){
+            std::cout << "(" << e[0] << ", " << e[1] << ", " <<  e[2] << ")";
+            if(newLine) std::cout << "\n";
+        }
         
 
 
