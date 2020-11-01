@@ -42,8 +42,8 @@ void CoreLauncher::launch(const char* fileName){
     auto lowerLeftCorner = cameraRay.origin() - horizontal/2 - vertical/2 - Vec3(0, 0, focalLength);
 
     RayHittableList world;
+   // world.add(make_shared<SphereHittable>(Point3(0,-100.5,-1), 100.0));
     world.add(make_shared<SphereHittable>(Point3(0,0,-1), 0.5));
-    world.add(make_shared<SphereHittable>(Point3(0,-100.5,-1), 100.0));
 
 
    

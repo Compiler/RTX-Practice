@@ -10,9 +10,17 @@ bool SphereHittable::hit(const Ray& currentRay, double tMin, double tMax, RayHit
     double x = sqrt(_radius * _radius - y*y);
     double t1 = t - x;
     if(t1 > tMin && t1 < tMax){
-        hitRecord.collisionPoint = t1;
+        hitRecord.collisionPoint = currentRay.at(t1);
         hitRecord.t = t;
-        hitRecord.setNormalFace(currentRay, (t1 - _center)/_radius);
+        hitRecord.setNormalFace(currentRay, unit_vector(hitRecord.collisionPoint - _center));
+        return true;
+    }
+
+    double t2 = t - x;
+    if(t2 > tMin && t2 < tMax){
+        hitRecord.collisionPoint = currentRay.at(t2);
+        hitRecord.t = t;
+        hitRecord.setNormalFace(currentRay, unit_vector(hitRecord.collisionPoint - _center));
         return true;
     }
     return false;
