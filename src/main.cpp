@@ -1,22 +1,27 @@
 #pragma once
 #include <Launcher.h>
 #include <OtherLauncher/CoreLauncher.h>
+#include <Engine/RenderCore.h>
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
 int main(){
 
-    CoreLauncher launcherCore;
-    launcherCore.launch("_core_Current_Image.ppm");
+    //CoreLauncher launcherCore;
+    //launcherCore.launch("_core_Current_Image.ppm");
 
-
+    RenderCore core;
+    core.load();
+    while(core.isRunning()){
+        core.update();
+        core.render();
+    }
+    core.unload();
     
 
-    // Launcher launcher;
-    // launcher.launch("_Current_Image_.ppm");
-    // Launcher::DIFFUSE_TYPE = DiffuseMethods::UNIT_HEMISPHERE_DIFFUSE;
-    // launcher.launch("UNIT_HEMISPHERE_DIFFUSE.ppm");
-    // Launcher::DIFFUSE_TYPE = DiffuseMethods::UNIT_SPHERE_DIFFUSE;
-    // launcher.launch("UNIT_SPHERE_DIFFUSE.ppm");
-    // Launcher::DIFFUSE_TYPE = DiffuseMethods::UNIT_VECTOR_DIFFUSE;
-    // launcher.launch("UNIT_VECTOR_DIFFUSE.ppm");
+    Launcher launcher;
+    launcher.launch("_Current_Image_.ppm");
+
+
     return 0;
 }

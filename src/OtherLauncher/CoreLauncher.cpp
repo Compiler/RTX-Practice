@@ -21,7 +21,7 @@ Color getRayColor(const Ray& currentRay, const RayHittableList& world, int depth
         return Color(0,0,0);
     RayHitRecord record;
     if(world.hit(currentRay, 0.001, INFINITY, record)){
-        Point3 newTarget = record.collisionPoint + record.collisionNormal + random_in_unit_sphere();
+        Point3 newTarget = record.collisionPoint + record.collisionNormal + random_unit_vector();
         Ray newRay(record.collisionPoint, newTarget - record.collisionPoint);
         return 0.5 * getRayColor(newRay, world, depth-1);
         return 0.5* (record.collisionNormal + Color(1));

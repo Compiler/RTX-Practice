@@ -14,6 +14,7 @@
 #include <Materials/Metal.h>
 #include <Materials/Material.h>
 #include <Materials/LambertianDiffuse.h>
+#include <Materials/Dialectric.h>
 
 
 class Launcher{
