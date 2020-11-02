@@ -16,10 +16,13 @@
 #include <Materials/LambertianDiffuse.h>
 #include <Materials/Dialectric.h>
 
+#include <vector>
+
 
 class Launcher{
 
     public:
+        static std::vector<unsigned char> PIXELDATA;
         static int DIFFUSE_TYPE;
 
         void launch(const char* fileName);

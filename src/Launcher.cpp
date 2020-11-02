@@ -49,7 +49,7 @@ HittableList random_scene() {
 
 
 int Launcher::DIFFUSE_TYPE = DiffuseMethods::UNIT_VECTOR_DIFFUSE;
-
+std::vector<unsigned char> Launcher::PIXELDATA;
 
 double RayHitSphere(const Point3& SphereCenter, double SphereRadius, const Ray& r);
 
@@ -105,7 +105,7 @@ void Launcher::launch(const char* fileName){
     //world = random_scene();
 
     constexpr double ASPECT_RATIO = 16.0/9.0;
-    constexpr int IMAGE_WIDTH = 400;
+    constexpr int IMAGE_WIDTH = 100;
     constexpr int IMAGE_HEIGHT = IMAGE_WIDTH / ASPECT_RATIO;
     constexpr int MAX_CHILD_RAYS = 50;
     constexpr int SPP = 100;
@@ -140,6 +140,9 @@ void Launcher::launch(const char* fileName){
             int green = (int)(256 * clamp(g, 0.0, 0.999));
             int blue = (int)(256 * clamp(b, 0.0, 0.999));
             fprintf(file, "%d %d %d\n", red, green, blue);
+            PIXELDATA.push_back(red);
+            PIXELDATA.push_back(green);
+            PIXELDATA.push_back(blue);
         }
     }
     std::cerr << "\nDone.\n";

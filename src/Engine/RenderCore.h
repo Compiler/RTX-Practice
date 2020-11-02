@@ -5,12 +5,16 @@
 #include <Engine/Tools/Input/InputManager.h>
 #include <Engine/Tools/Files/FileLoaderFactory.h>
 #include <Engine/Rendering/TextureManager.h>
+
 class RenderCore{
     private:
         reach::Window* _window;
         reach::ShaderProgram _program;
-        reach::TextureData _data;
+        unsigned int _rtx_textureID;
         bool _isRunning = true;
+
+
+        unsigned int _vertexID, _bufferID;
     public:
         void load();
         void update();

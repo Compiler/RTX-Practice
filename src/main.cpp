@@ -10,6 +10,11 @@ int main(){
     //CoreLauncher launcherCore;
     //launcherCore.launch("_core_Current_Image.ppm");
 
+    
+
+    Launcher launcher;
+    launcher.launch("_Current_Image_.ppm");
+    
     RenderCore core;
     core.load();
     while(core.isRunning()){
@@ -17,10 +22,6 @@ int main(){
         core.render();
     }
     core.unload();
-    
-
-    Launcher launcher;
-    launcher.launch("_Current_Image_.ppm");
 
 
     return 0;
