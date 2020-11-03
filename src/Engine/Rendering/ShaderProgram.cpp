@@ -2,7 +2,7 @@
 
 
 namespace reach{
-
+	
 
     uint32_t ShaderProgram::_loadShader(const char* fileName, int type){
         uint32_t shaderID;
@@ -22,6 +22,7 @@ namespace reach{
                 if(type == GL_VERTEX_SHADER) shaderType = "VERTEX";
                 else if(type == GL_FRAGMENT_SHADER) shaderType = "FRAGMENT";
                 else if(type == GL_GEOMETRY_SHADER) shaderType = "GEOMETRY";
+                else if(type == GL_COMPUTE_SHADER) shaderType = "COMPUTE";
                 else REACH_ERROR("SHADER::" << shaderType << "TYPE_UNKNOWN - TYPE = " << type);
 				REACH_ERROR("SHADER::" << shaderType << "::COMPILATION_FAILED\t" <<  infoLog);
 			}
@@ -30,6 +31,29 @@ namespace reach{
         return shaderID;
 
     }
+
+    void ShaderProgram::loadComputeShader(const char* computeFile){
+        uint32_t cid = _loadShader(computeFile, GL_COMPUTE_SHADER);
+		_shaderProgram = glCreateProgram();
+
+		glAttachShader(_shaderProgram, cid);
+		glLinkProgram(_shaderProgram);
+
+		{
+			int  success;
+			char infoLog[512];
+			glGetProgramiv(_shaderProgram, GL_LINK_STATUS, &success);
+			if(!success) {
+				glGetProgramInfoLog(_shaderProgram, 512, NULL, infoLog);
+				REACH_ERROR("ERROR::SHADER::COMP::COMPILATION_FAILED\t "<< infoLog );
+			}
+		}
+
+
+		use();
+		REACH_DEBUG("Loaded Shader '" << computeFile << "'");
+	}
+
 
     void ShaderProgram::loadShader(const char* vertexFile, const char* fragmentFile){
         uint32_t vid = _loadShader(vertexFile, SHADER_TYPE_VERTEX);

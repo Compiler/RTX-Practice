@@ -11,6 +11,7 @@ class RenderCore{
     private:
         reach::Window* _window;
         reach::ShaderProgram _program;
+        reach::ShaderProgram _compute;
         unsigned int _rtx_textureID;
         bool _isRunning = true;
 

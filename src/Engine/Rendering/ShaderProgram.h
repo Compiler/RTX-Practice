@@ -12,8 +12,8 @@ namespace reach{
     class ShaderProgram{
         
         private:
-            uint32_t _loadShader(const char* fileName, int type);
             uint32_t _shaderProgram;
+            uint32_t _loadShader(const char* fileName, int type);
 
             int _check_uniform_(const char* name, bool print = true){
                 GLint uniformID = glGetUniformLocation(_shaderProgram, name);
@@ -22,6 +22,7 @@ namespace reach{
             }
         public:
             ShaderProgram() = default;
+            void loadComputeShader(const char* computeFile);
             void loadShader(const char* vertexFile, const char* fragFile);
             void loadShader(const char* vertexFile, const char* fragFile, const char* geomFile);
 
