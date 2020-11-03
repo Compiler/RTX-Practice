@@ -70,7 +70,10 @@ namespace reach { namespace FileLoaderFactory{
         int width, height, nrChannels;
         stbi_set_flip_vertically_on_load(true); 
 
-        unsigned char *data = Launcher::PIXELDATA.data();
+        GLubyte  *data = Launcher::PIXELDATA.data();
+        if(Launcher::PIXELDATA.size() % 3 != 0) REACH_ERROR("Pixel Data not alligned");
+        width = Launcher::WIDTH;
+        height = Launcher::HEIGHT;
         if (data){
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
             glGenerateMipmap(GL_TEXTURE_2D);

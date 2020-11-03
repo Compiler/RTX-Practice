@@ -23,6 +23,7 @@ class Launcher{
 
     public:
         static std::vector<unsigned char> PIXELDATA;
+        static int WIDTH, HEIGHT;
         static int DIFFUSE_TYPE;
 
         void launch(const char* fileName);

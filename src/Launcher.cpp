@@ -50,6 +50,8 @@ HittableList random_scene() {
 
 int Launcher::DIFFUSE_TYPE = DiffuseMethods::UNIT_VECTOR_DIFFUSE;
 std::vector<unsigned char> Launcher::PIXELDATA;
+int Launcher::WIDTH = 0;
+int Launcher::HEIGHT = 0;
 
 double RayHitSphere(const Point3& SphereCenter, double SphereRadius, const Ray& r);
 
@@ -96,6 +98,11 @@ void Launcher::launch(const char* fileName){
     auto Material_center = std::make_shared<LambertianDiffuse>(Color(0.3, 0.2, 0.5));
     auto Material_left   = make_shared<Dialectric>(1.5);
     auto Material_right  = std::make_shared<Metal>(Color(0.8, 0.6, 0.2), 0.0);
+
+    // auto Material_ground = std::make_shared<LambertianDiffuse>(Color(1,0,0));
+    // auto Material_center = std::make_shared<LambertianDiffuse>(Color(1,0,0));
+    // auto Material_left   = make_shared<Dialectric>(1.5);
+    // auto Material_right  = std::make_shared<Metal>(Color(1,0,0), 0.0);
     world.add(make_shared<Sphere>(Point3( 0.0, -100.5, -1.0), 100.0, Material_ground));
     world.add(make_shared<Sphere>(Point3( 0.0,    0.0, -1.0),   0.5, Material_center));
     world.add(make_shared<Sphere>(Point3(-1.0,    0.0, -1.0),   0.5, Material_left));
@@ -105,8 +112,10 @@ void Launcher::launch(const char* fileName){
     //world = random_scene();
 
     constexpr double ASPECT_RATIO = 16.0/9.0;
-    constexpr int IMAGE_WIDTH = 100;
+    constexpr int IMAGE_WIDTH = 400;
     constexpr int IMAGE_HEIGHT = IMAGE_WIDTH / ASPECT_RATIO;
+    Launcher::WIDTH = IMAGE_WIDTH;
+    Launcher::HEIGHT = IMAGE_HEIGHT;
     constexpr int MAX_CHILD_RAYS = 50;
     constexpr int SPP = 100;
     constexpr int PIXEL_DENSITY =   2;
@@ -140,9 +149,13 @@ void Launcher::launch(const char* fileName){
             int green = (int)(256 * clamp(g, 0.0, 0.999));
             int blue = (int)(256 * clamp(b, 0.0, 0.999));
             fprintf(file, "%d %d %d\n", red, green, blue);
-            PIXELDATA.push_back(red);
-            PIXELDATA.push_back(green);
-            PIXELDATA.push_back(blue);
+            unsigned char rred = red;
+            unsigned char ggreen = green;
+            unsigned char bblue = blue;
+            PIXELDATA.push_back(rred);PIXELDATA.push_back(ggreen);PIXELDATA.push_back(bblue);
+            // std::cout << red << "->" << (int)rred << "\n";
+            // std::cout << green << "->" << (int)ggreen << "\n";
+            // std::cout << blue << "->" << (int)bblue << "\n";
         }
     }
     std::cerr << "\nDone.\n";
