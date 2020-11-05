@@ -3,6 +3,14 @@
 layout(local_size_x = 1, local_size_y = 1) in;
 layout(rgba32f, binding = 0) uniform image2D img_output;
 
+
+float rand(vec2 co);
+vec3 random();
+vec3 random_in_unit_sphere();
+uint wang_hash(inout uint seed);
+float RandomFloat01(inout uint state);
+vec3 RandomUnitVector(inout uint state);
+
 struct Sphere{
   vec3 center;
   vec3 color;
@@ -17,17 +25,27 @@ struct Ray{
 
 };
 
-#define MAX_OBJECTS 3
+#define MAX_OBJECTS 4
+#define MAX_RAY_DEPTH 50
+#define NO_HIT_COLOR vec4(0.3, 0.3, 0.4, 1)
+#define MISSED_RAY 1000000000
 struct World{
   Sphere[MAX_OBJECTS] spheres;
+
+};
+
+struct HitRecord{
+  vec3 collisionPoint;
+  vec3 collisionNormal;
+  float dist;
+  bool frontFacing;
+
 
 };
 World world;
 
 
-
-vec4 hitSphere(Ray ray, Sphere sphere){
-  vec4 pixel = vec4(0);
+vec4 hitSphere(Ray ray, inout HitRecord record, Sphere sphere){
   float t = dot(sphere.center-ray.origin, ray.direction);
   vec3 collisionPoint = ray.origin + ray.direction*t;
 
@@ -36,47 +54,76 @@ vec4 hitSphere(Ray ray, Sphere sphere){
     float x = sqrt(sphere.radius*sphere.radius - y*y);
     float t1 = t-x;
     float t2 = t+x;
-
-    vec3 N = (ray.origin + ray.direction * t1) - ray.origin;
-    //N = N / length(N);
-    pixel = 0.5*vec4(N.x+1, N.y+1, N.z+1, 1);
-    //pixel = vec4(sphere.color * vec3(t1), 1.);
-
+    collisionPoint = ray.origin + ray.direction*t1;
+    vec3 N = collisionPoint - sphere.center;
+    record.collisionNormal = collisionPoint - sphere.center;
+    record.collisionPoint = collisionPoint;
+    record.dist = t;
+    record.frontFacing = dot(ray.direction, record.collisionNormal / sphere.radius) < 0;
+    if(!record.frontFacing) record.collisionNormal = -record.collisionNormal;
+    return vec4(sphere.color, 1);
   }
-  return pixel;
+
+  // vec3 unit_direction = ray.direction / length(ray.direction);
+  // t = 0.5*(unit_direction.y + 1.0);
+  // pixel = vec4((1.0-t)*vec3(1.0, 1.0, 1.0) + t*vec3(0.5, 0.7, 1.0), 1);
+  return NO_HIT_COLOR;
 }
 
 
 
 void initWorld(){ 
   float rad = 0.5;
+  float spacing = 1;
+  int count = 1;
   Sphere sphere;
-  sphere.center = vec3(0.5, 0, 4);
+  sphere.center = vec3(2 - spacing * count++, 0, 4);
   sphere.radius = rad; 
   sphere.color = vec3(0,1,0);
 
   Sphere sphere2;
-  sphere2.center = vec3(-1.5, 0, 4);
+  sphere2.center = vec3(2 - spacing * count++, 0, 4);
   sphere2.radius = rad; 
   sphere2.color = vec3(1,0,0);
 
 
   Sphere sphere3;
-  sphere3.center = vec3(-0.5, 0, 4);
+  sphere3.center = vec3(2 - spacing * count++, 0, 4);
   sphere3.radius = rad; 
   sphere3.color = vec3(0,0,1);
+
+  Sphere sphere4;
+  sphere4.center = vec3(0, 10, 1);
+  sphere4.radius = 10; 
+  sphere4.color = vec3(0.2,0.2,0.2);
   world.spheres[0] = sphere;
   world.spheres[1] = sphere2;
   world.spheres[2] = sphere3;
+  world.spheres[3] = sphere4;
 
 }
 
 vec4 runSimulation(Ray camera){
   vec4 pixel = vec4(0);
-
-  pixel += hitSphere(camera, world.spheres[0]);
-  pixel += hitSphere(camera, world.spheres[1]);
-  pixel += hitSphere(camera, world.spheres[2]);
+  HitRecord record;
+  record.dist = MISSED_RAY;
+  for(int i = 0; i < MAX_OBJECTS; i++){
+    vec4 currentPixel = hitSphere(camera, record, world.spheres[i]);
+    if(pixel != vec4(0)){
+      for(int k = 0; k < 1; k++){
+        vec3 target = record.collisionPoint + record.collisionNormal + random_in_unit_sphere();
+        Ray nextRay;
+        for(int j = 0; j < MAX_OBJECTS; j++){
+          if(j == i) continue;
+          nextRay.origin = record.collisionPoint;
+          nextRay.direction = target - record.collisionPoint;
+          currentPixel = 0.5 * hitSphere(nextRay, record, world.spheres[j]);
+        }
+      }
+    }
+    pixel += currentPixel;
+    
+  }
 
   return pixel;
 }
@@ -105,3 +152,72 @@ void main() {
   // output to a specific pixel in the image
   imageStore(img_output, pixel_coords, pixel);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+vec3 random_in_unit_sphere() {
+    while (true) {
+        vec3 p = random();
+        p = p / length(p);
+        if (p.x*p.x + p.y*p.y + p.z*p.z  >= 1) continue;
+        return p;
+    }
+}
+vec3 random(){
+  vec2 co = gl_GlobalInvocationID.xy;
+  co.x=1;co.y=2;
+  return vec3(rand(co));
+
+}
+
+float rand(vec2 co){
+    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
+// uint wang_hash(inout uint seed)
+// {
+//     seed = uint(seed ^ uint(61)) ^ uint(seed >> uint(16));
+//     seed *= uint(9);
+//     seed = seed ^ (seed >> 4);
+//     seed *= uint(0x27d4eb2d);
+//     seed = seed ^ (seed >> 15);
+//     return seed;
+// }
+ 
+// float RandomFloat01(inout uint state)
+// {
+//     return float(wang_hash(state)) / 4294967296.0;
+// }
+
+ 
+// vec3 RandomUnitVector(inout uint state)
+// {
+//     float z = RandomFloat01(state) * 2.0f - 1.0f;
+//     //float a = RandomFloat01(state) * c_twopi;
+//     float r = sqrt(1.0f - z * z);
+//     float x = r * cos(a);
+//     float y = r * sin(a);
+//     return vec3(x, y, z);
+// }

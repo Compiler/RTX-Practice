@@ -2,8 +2,15 @@
 
 uint8_t RenderCore::RENDER_MODE = RENDER_MODES::PARALLEL;
 void RenderCore::_setupCompute(){
+    int work_grp_size[3];
+
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &work_grp_size[0]);
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &work_grp_size[1]);
+    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &work_grp_size[2]);
        
-    int tex_w = 512, tex_h = 512;
+    int tex_w = work_grp_size[0], tex_h = 1024;
+    float ratio = 16.0f/ 9.0f;
+    tex_h = tex_w / ratio;
     glGenTextures(1, &_computeTexture);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, _computeTexture);
@@ -15,16 +22,12 @@ void RenderCore::_setupCompute(){
     glBindImageTexture(0, _computeTexture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
 
 
-    int work_grp_size[3];
-
-    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &work_grp_size[0]);
-    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &work_grp_size[1]);
-    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &work_grp_size[2]);
 
     printf("max local (in one shader) work group sizes x:%i y:%i z:%i\n",
     work_grp_size[0], work_grp_size[1], work_grp_size[2]);
     
     _compute.loadComputeShader(REACH_INTERNAL_SHADER("rays.comp"));
+
     glDispatchCompute((GLuint)tex_w, (GLuint)tex_h, 1);
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
@@ -39,7 +42,7 @@ void RenderCore::_setupCompute(){
 }
 void RenderCore::_generalSetup(){
 
-    float a = 0.75f;
+    float a = 0.95f;
     float vertices[] = {
         // positions  texture coords
         -a,  -a, 0.0f,  0.0f, 1.0f,
