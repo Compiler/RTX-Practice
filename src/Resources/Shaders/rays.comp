@@ -1,33 +1,106 @@
 #version 430
+
 layout(local_size_x = 1, local_size_y = 1) in;
 layout(rgba32f, binding = 0) uniform image2D img_output;
 
+struct Sphere{
+  vec3 center;
+  vec3 color;
+  float radius;
+
+
+};
+
+struct Ray{
+  vec3 origin;
+  vec3 direction;
+
+};
+
+#define MAX_OBJECTS 3
+struct World{
+  Sphere[MAX_OBJECTS] spheres;
+
+};
+World world;
+
+
+
+vec4 hitSphere(Ray ray, Sphere sphere){
+  vec4 pixel = vec4(0);
+  float t = dot(sphere.center-ray.origin, ray.direction);
+  vec3 collisionPoint = ray.origin + ray.direction*t;
+
+  float y = length(sphere.center-collisionPoint);
+  if(y < sphere.radius){
+    float x = sqrt(sphere.radius*sphere.radius - y*y);
+    float t1 = t-x;
+    float t2 = t+x;
+
+    vec3 N = (ray.origin + ray.direction * t1) - ray.origin;
+    //N = N / length(N);
+    pixel = 0.5*vec4(N.x+1, N.y+1, N.z+1, 1);
+    //pixel = vec4(sphere.color * vec3(t1), 1.);
+
+  }
+  return pixel;
+}
+
+
+
+void initWorld(){ 
+  float rad = 0.5;
+  Sphere sphere;
+  sphere.center = vec3(0.5, 0, 4);
+  sphere.radius = rad; 
+  sphere.color = vec3(0,1,0);
+
+  Sphere sphere2;
+  sphere2.center = vec3(-1.5, 0, 4);
+  sphere2.radius = rad; 
+  sphere2.color = vec3(1,0,0);
+
+
+  Sphere sphere3;
+  sphere3.center = vec3(-0.5, 0, 4);
+  sphere3.radius = rad; 
+  sphere3.color = vec3(0,0,1);
+  world.spheres[0] = sphere;
+  world.spheres[1] = sphere2;
+  world.spheres[2] = sphere3;
+
+}
+
+vec4 runSimulation(Ray camera){
+  vec4 pixel = vec4(0);
+
+  pixel += hitSphere(camera, world.spheres[0]);
+  pixel += hitSphere(camera, world.spheres[1]);
+  pixel += hitSphere(camera, world.spheres[2]);
+
+  return pixel;
+}
+
+
+
 void main() {
   // base pixel colour for image
-  vec4 pixel = vec4(0.0, 0.0, 0.0, 1.0);
+  vec4 pixel = vec4(0.2, 0.2, 0.3, 1);
+
   // get index in global work group i.e x,y position
   ivec2 pixel_coords = ivec2(gl_GlobalInvocationID.xy);
+  ivec2 dims = imageSize(img_output); // fetch image dimensions
+  vec2 uv = (pixel_coords - 0.5 * dims) / dims.y;
+
+  Ray camera;
+  camera.origin = vec3(0, 0, -2);
+  camera.direction = normalize(vec3(uv.x, uv.y, 1.0));
+
+  initWorld();
+  pixel = runSimulation(camera);
   
 
-  float max_x = 5.0;
-  float max_y = 5.0;
-  ivec2 dims = imageSize(img_output); // fetch image dimensions
-  float x = (float(pixel_coords.x * 2 - dims.x) / dims.x);
-  float y = (float(pixel_coords.y * 2 - dims.y) / dims.y);
-  vec3 ray_o = vec3(x * max_x, y * max_y, 0.0);
-  vec3 ray_d = vec3(0.0, 0.0, -1.0); // ortho
 
-  vec3 sphere_c = vec3(0.0, 0.0, -10.0);
-  float sphere_r = 1.0;
-
-  vec3 omc = ray_o - sphere_c;
-  float b = dot(ray_d, omc);
-  float c = dot(omc, omc) - sphere_r * sphere_r;
-  float bsqmc = b * b - c;
-  // hit one or both sides
-  if (bsqmc >= 0.0) {
-    pixel = vec4(0.4, 0.4, 1.0, 1.0);
-  }
   
   // output to a specific pixel in the image
   imageStore(img_output, pixel_coords, pixel);

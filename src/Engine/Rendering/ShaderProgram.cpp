@@ -46,6 +46,7 @@ namespace reach{
 			if(!success) {
 				glGetProgramInfoLog(_shaderProgram, 512, NULL, infoLog);
 				REACH_ERROR("ERROR::SHADER::COMP::COMPILATION_FAILED\t "<< infoLog );
+				assert(false);
 			}
 		}
 
@@ -73,6 +74,8 @@ namespace reach{
 			if(!success) {
 				glGetProgramInfoLog(_shaderProgram, 512, NULL, infoLog);
 				REACH_ERROR("ERROR::SHADER::COMP::COMPILATION_FAILED\t "<< infoLog );
+				assert(false);
+
 			}
 		}
 

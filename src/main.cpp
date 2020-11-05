@@ -12,10 +12,11 @@ int main(){
 
     
 
-    // Launcher launcher;
-    // launcher.launch("_Current_Image_.ppm");
+    //Launcher launcher;
+    //launcher.launch("_Current_Image_.ppm");
     
     RenderCore core;
+    RenderCore::RENDER_MODE = RENDER_MODES::PARALLEL;
     core.load();
     while(core.isRunning()){
         core.update();

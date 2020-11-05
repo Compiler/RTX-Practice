@@ -1,15 +1,8 @@
 #include "RenderCore.h"
 
-void RenderCore::load(){
-    reach::StartupSystems::_initGLFW();
-    _window = new reach::Window(1920, 1080, "RTX Engine", false);
-    reach::StartupSystems::_initGlad();
-    //reach::StartupSystems::_initTextureManager();
-    glfwSetWindowUserPointer(_window->getWindow(), this);
-    GLFWCallbacks::initCallBacks(_window);
-    glfwSwapInterval(0);
-
-   
+uint8_t RenderCore::RENDER_MODE = RENDER_MODES::PARALLEL;
+void RenderCore::_setupCompute(){
+       
     int tex_w = 512, tex_h = 512;
     glGenTextures(1, &_computeTexture);
     glActiveTexture(GL_TEXTURE0);
@@ -35,8 +28,16 @@ void RenderCore::load(){
     glDispatchCompute((GLuint)tex_w, (GLuint)tex_h, 1);
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
-    _program.loadShader(REACH_INTERNAL_SHADER("pass.vert"), REACH_INTERNAL_SHADER("pass.frag"));
-     
+    
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, _computeTexture);
+
+    _program.use();
+    _program.uniform_set1Integer("textureVal", 0);
+
+
+}
+void RenderCore::_generalSetup(){
 
     float a = 0.75f;
     float vertices[] = {
@@ -62,8 +63,41 @@ void RenderCore::load(){
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
 
+    
+    _program.loadShader(REACH_INTERNAL_SHADER("pass.vert"), REACH_INTERNAL_SHADER("pass.frag"));
+    
 
-    //_rtx_textureID = reach::FileLoaderFactory::loadOpenGL_RTX_Texture();
+}
+
+void RenderCore::_setupRTX(){
+
+     
+
+    _rtx_textureID = reach::FileLoaderFactory::loadOpenGL_RTX_Texture();
+
+    glActiveTexture(GL_TEXTURE0); // activate the texture unit first before binding texture
+    glBindTexture(GL_TEXTURE_2D, _rtx_textureID);
+
+    _program.use();
+    _program.uniform_set1Integer("textureVal", 0);
+
+}
+
+
+void RenderCore::load(){
+    reach::StartupSystems::_initGLFW();
+    _window = new reach::Window(1920, 1080, "RTX Engine", false);
+    reach::StartupSystems::_initGlad();
+    //reach::StartupSystems::_initTextureManager();
+    glfwSetWindowUserPointer(_window->getWindow(), this);
+    GLFWCallbacks::initCallBacks(_window);
+    glfwSwapInterval(0);
+
+    _generalSetup();
+    if(RenderCore::RENDER_MODE == RENDER_MODES::PARALLEL) _setupCompute();
+    else if(RenderCore::RENDER_MODE ==RENDER_MODES::RTX) _setupRTX();
+
+
 
 }
 
@@ -72,21 +106,32 @@ void RenderCore::update(){
     if(glfwWindowShouldClose(_window->getWindow())) _isRunning = 0;
 }
 
-void RenderCore::render(){
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    glClear( GL_COLOR_BUFFER_BIT);
-    _compute.use();
-    glDispatchCompute((GLuint)512, (GLuint)512, 1);
+void RenderCore::_renderCompute(){
+    {
+        _compute.use();
+        glDispatchCompute((GLuint)512, (GLuint)512, 1);
+    }
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, _computeTexture);
 
     _program.use();
-    glActiveTexture(GL_TEXTURE0); // activate the texture unit first before binding texture
-    glBindTexture(GL_TEXTURE_2D, _computeTexture);
-
     _program.uniform_set1Integer("textureVal", 0);
-    //_program.use();
+
+}
+
+void RenderCore::_renderRTX(){
+    // _program.use();
+    // glActiveTexture(GL_TEXTURE0); // activate the texture unit first before binding texture
+    // glBindTexture(GL_TEXTURE_2D, _computeTexture);
+
+}
+
+void RenderCore::render(){
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    
+    if(RenderCore::RENDER_MODE == RENDER_MODES::PARALLEL) _renderCompute();
+    else if(RenderCore::RENDER_MODE == RENDER_MODES::RTX) _renderRTX();
+
     glBindVertexArray(_vertexID);
     glDrawArrays(GL_TRIANGLES, 0, 6); 
 

@@ -6,6 +6,7 @@
 #define SHADER_TYPE_GEOMETRY    (int) 0x8DD9
 #define SHADER_TYPE_TESSELATION (uint8_t)GL_arb_tesselation_shader
 #include <Engine/Tools/Files/FileLoaderFactory.h>
+#include <cassert>
 
 namespace reach{
 
