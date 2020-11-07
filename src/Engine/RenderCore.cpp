@@ -156,7 +156,6 @@ void RenderCore::_renderCompute(){
         if(reach::InputManager::isKeyPressed(reach::KeyCodes::KEY_UP))zPosition -=DELTA;
         if(reach::InputManager::isKeyPressed(reach::KeyCodes::KEY_DOWN))zPosition +=DELTA;
         
-        REACH_LOG(zPosition);
         _compute.uniform_set1Float("u_delta_x", xPosition);
         _compute.uniform_set1Float("u_delta_y", yPosition);
         _compute.uniform_set1Float("u_delta_z", zPosition);
