@@ -68,43 +68,36 @@ struct HitRecord{
 World world;
 
 
-bool hitSphere(Ray ray, inout HitRecord record, Sphere sphere){
-  precise float t = dot(sphere.center-ray.origin, ray.direction);
-  vec3 collisionPoint = ray.origin + ray.direction*t;
-
-  precise float y = length(sphere.center-collisionPoint);
-  if(y < sphere.radius){
-    float x = sqrt(sphere.radius*sphere.radius - y*y);
-    float t1 = t-x;
-    float t2 = t+x;
-    if(t1 > MIN_RAY_DIST && t1 < MAX_RAY_DIST){
-      collisionPoint = ray.origin + ray.direction*t1;
-      vec3 N = collisionPoint - sphere.center;
-      record.collisionNormal = normalize(collisionPoint - sphere.center);
-      record.collisionPoint = collisionPoint;
-      record.dist = t;
-      record.frontFacing = dot(ray.direction, record.collisionNormal) < 0;
-      if(!record.frontFacing) record.collisionNormal = -record.collisionNormal;
-      record.albedo = sphere.color;
-      record.emissive = sphere.emissive;
-    }
-    else if(t2 > MIN_RAY_DIST && t2 < MAX_RAY_DIST){
-      collisionPoint = ray.origin + ray.direction*t2;
-      vec3 N = collisionPoint - sphere.center;
-      record.collisionNormal = normalize(collisionPoint - sphere.center);
-      record.collisionPoint = collisionPoint;
-      record.dist = t;
-      record.frontFacing = dot(ray.direction, record.collisionNormal) < 0;
-      if(!record.frontFacing) record.collisionNormal = -record.collisionNormal;
-      record.albedo = sphere.color;
-      record.emissive = sphere.emissive;
-    }
-    return true;
+bool hitSphere(Ray ray, float tmin, float tmax, inout HitRecord record, Sphere sphere){
+  vec3 oc = ray.origin - sphere.center;
+  float a = ray.direction.x*ray.direction.x +ray.direction.y*ray.direction.y +ray.direction.z*ray.direction.z ;
+  float half_b = dot(oc, ray.direction);
+  float c = (oc.x * oc.x + oc.y * oc.y + oc.z * oc.z) - sphere.radius*sphere.radius;
+  float discriminant = half_b*half_b - a*c;
+  if (discriminant > 0) {
+      float root = sqrt(discriminant);
+      float temp = (-half_b - root) / a;
+      if (temp < tmax && temp > tmin) {
+          record.dist = temp;
+          record.collisionPoint = ray.origin + ray.direction * record.dist;
+          vec3 outward_normal = (record.collisionPoint - sphere.center) / sphere.radius;
+          record.frontFacing = dot(ray.direction, outward_normal) < 0;
+          record.collisionNormal = record.frontFacing ? outward_normal : -outward_normal;
+          record.albedo = sphere.color;
+          return true;
+      }
+      temp = (-half_b + root) / a;
+      if (temp < tmax && temp > tmin) {
+          record.dist = temp;
+          record.collisionPoint = ray.origin + ray.direction * record.dist;
+          vec3 outward_normal = (record.collisionPoint - sphere.center) / sphere.radius;
+          record.frontFacing = dot(ray.direction, outward_normal) < 0;
+          record.collisionNormal = record.frontFacing ? outward_normal : -outward_normal;
+          record.albedo = sphere.color;
+          return true;
+      }
   }
-  // vec3 unit_direction = ray.direction / length(ray.direction);
-  // t = 0.5*(unit_direction.y + 1.0);
-  // pixel = vec4((1.0-t)*vec3(1.0, 1.0, 1.0) + t*vec3(0.5, 0.7, 1.0), 1);
-  return false;
+    return false;
 }
 
 
@@ -168,7 +161,7 @@ vec4 runSimulation(Ray camera){
     HitRecord record;
     record.dist = MAX_RAY_DIST;
     for(int i = 0; i < MAX_OBJECTS; i++){
-      if(!hitSphere(currentRay, record, world.spheres[i])){
+      if(!hitSphere(currentRay, MIN_RAY_DIST, MAX_RAY_DIST, record, world.spheres[i])){
         vec3 unit_direction = normalize(currentRay.direction);
         float t = 0.5*(unit_direction.y + 1.0);
         pixel *= vec4((1.0-t)*vec3(1.0, 1.0, 1.0) + t*vec3(0.5, 0.7, 1.0), 1);
@@ -178,20 +171,22 @@ vec4 runSimulation(Ray camera){
     currentRay.origin = record.collisionPoint;
 
     //LAMBERTIAN DIFFUSE
-    //currentRay.direction = currentRay.origin - (record.collisionNormal + random_in_hemisphere(record.collisionNormal));
-    //pixel += 0.5*vec4(record.albedo,1);
+    currentRay.direction = (record.collisionPoint + random_in_hemisphere(record.collisionNormal)) - record.collisionPoint;
+    pixel += 0.5*vec4(record.albedo,1);
 
     //METAL
-     vec3 reflected = reflect(currentRay.direction, record.collisionNormal) + vec3(u_stx, u_sty, u_stz);
-     if(dot(reflected, record.collisionNormal) > 0){
-       currentRay.direction = reflected;
-       pixel += 0.5*vec4(record.albedo,1);
-     }
+    //  vec3 reflected = reflect(currentRay.direction, record.collisionNormal) + vec3(u_stx, u_sty, u_stz);
+    //  if(dot(reflected, record.collisionNormal) > 0){
+    //    currentRay.direction = reflected;
+    //    pixel += 0.5*vec4(record.albedo,1);
+    //  }
 
 
   }
 
-  
+  vec3 unit_direction = normalize(currentRay.direction);
+  float t = 0.5*(-unit_direction.y + 1.0);
+  pixel *= vec4((1.0-t)*vec3(1.0, 1.0, 1.0) + t*vec3(1.5, 0.7, 1.0), 1);
 
   return pixel;
 }
