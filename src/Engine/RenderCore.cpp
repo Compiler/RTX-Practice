@@ -146,6 +146,8 @@ void RenderCore::_renderCompute(){
         static float zPosition = 0;
         static float yPosition = 0;
         static float xPosition = 0;
+        static float u_st = 0;
+        static Vec3 rando = random_in_unit_sphere();
     {
         _compute.use();
         static constexpr float DELTA = 0.025;
@@ -153,12 +155,18 @@ void RenderCore::_renderCompute(){
         if(reach::InputManager::isKeyPressed(reach::KeyCodes::KEY_A))xPosition -=DELTA;
         if(reach::InputManager::isKeyPressed(reach::KeyCodes::KEY_W))yPosition -=DELTA;
         if(reach::InputManager::isKeyPressed(reach::KeyCodes::KEY_S))yPosition +=DELTA;
-        if(reach::InputManager::isKeyPressed(reach::KeyCodes::KEY_UP))zPosition -=DELTA;
-        if(reach::InputManager::isKeyPressed(reach::KeyCodes::KEY_DOWN))zPosition +=DELTA;
+        if(reach::InputManager::isKeyPressed(reach::KeyCodes::KEY_LEFT_SHIFT))zPosition -=DELTA;
+        if(reach::InputManager::isKeyPressed(reach::KeyCodes::KEY_SPACE))zPosition +=DELTA;
+
+        if(reach::InputManager::isKeyPressed(reach::KeyCodes::KEY_EQUAL))u_st += 0.01;
+        if(reach::InputManager::isKeyPressed(reach::KeyCodes::KEY_MINUS))u_st -= 0.01;
         
         _compute.uniform_set1Float("u_delta_x", xPosition);
         _compute.uniform_set1Float("u_delta_y", yPosition);
         _compute.uniform_set1Float("u_delta_z", zPosition);
+        _compute.uniform_set1Float("u_stx", u_st*rando.x());
+        _compute.uniform_set1Float("u_sty", u_st*rando.y() );
+        _compute.uniform_set1Float("u_stz", u_st*rando.z());
 
 
            

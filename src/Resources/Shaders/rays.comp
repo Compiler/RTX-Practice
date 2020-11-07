@@ -14,18 +14,28 @@ uniform precise float u_delta_z;
 
 
 uint rngState;
+
+//prototypes
 precise float rand(vec2 co);
 vec3 random();
-vec3 random_in_unit_sphere();
+vec3 random_in_hemisphere(vec3 normal);
+vec3 random_in_unit_sphere(uint state);
 uint wang_hash(inout uint seed);
 precise float RandomFloat01(inout uint state);
 vec3 RandomUnitVector(inout uint state);
 
+
+//data
+struct Metal{
+  float fuzz;
+
+};
 struct Sphere{
   vec3 center;
   vec3 color;
   precise float radius;
   vec3 emissive;
+  bool isMetal;
 
 
 };
@@ -39,7 +49,8 @@ struct Ray{
 #define MAX_OBJECTS 4
 #define MAX_RAY_DEPTH 50
 #define NO_HIT_COLOR vec4(0.3, 0.3, 0.4, 1)
-#define MISSED_RAY 1000000000
+#define MAX_RAY_DIST 1000000000
+#define MIN_RAY_DIST 0.001
 struct World{
   Sphere[MAX_OBJECTS] spheres;
 
@@ -52,7 +63,6 @@ struct HitRecord{
   bool frontFacing;
   vec3 albedo;
   vec3 emissive;
-
 
 };
 World world;
@@ -67,7 +77,7 @@ bool hitSphere(Ray ray, inout HitRecord record, Sphere sphere){
     float x = sqrt(sphere.radius*sphere.radius - y*y);
     float t1 = t-x;
     float t2 = t+x;
-    if(t1 > 0.001 && t1 < MISSED_RAY){
+    if(t1 > MIN_RAY_DIST && t1 < MAX_RAY_DIST){
       collisionPoint = ray.origin + ray.direction*t1;
       vec3 N = collisionPoint - sphere.center;
       record.collisionNormal = normalize(collisionPoint - sphere.center);
@@ -78,9 +88,8 @@ bool hitSphere(Ray ray, inout HitRecord record, Sphere sphere){
       record.albedo = sphere.color;
       record.emissive = sphere.emissive;
     }
-    else if(t2 > 0.001 && t2 < MISSED_RAY){
-    t1 = t2;
-      collisionPoint = ray.origin + ray.direction*t1;
+    else if(t2 > MIN_RAY_DIST && t2 < MAX_RAY_DIST){
+      collisionPoint = ray.origin + ray.direction*t2;
       vec3 N = collisionPoint - sphere.center;
       record.collisionNormal = normalize(collisionPoint - sphere.center);
       record.collisionPoint = collisionPoint;
@@ -90,11 +99,11 @@ bool hitSphere(Ray ray, inout HitRecord record, Sphere sphere){
       record.albedo = sphere.color;
       record.emissive = sphere.emissive;
     }
+    return true;
   }
   // vec3 unit_direction = ray.direction / length(ray.direction);
   // t = 0.5*(unit_direction.y + 1.0);
   // pixel = vec4((1.0-t)*vec3(1.0, 1.0, 1.0) + t*vec3(0.5, 0.7, 1.0), 1);
-  //record.albedo = vec3(0);
   return false;
 }
 
@@ -113,7 +122,7 @@ void initWorld(){
   Sphere sphere2;
   sphere2.center = vec3(2 - spacing * count++ + u_delta_x, 0+u_delta_y, 4+u_delta_z);//u_delta + 4
   sphere2.radius = rad; 
-  sphere2.color = vec3(0.7,0,1);
+  sphere2.color = vec3(0.7,0,0);
   sphere2.emissive = vec3(0.0f, 0.0f, 0.0f);
 
 
@@ -125,39 +134,63 @@ void initWorld(){
 
   Sphere sphere4;
   sphere4.center = vec3(0, 10, 1);
-  sphere4.radius = 10; 
-  sphere4.color = vec3(0.1,0.1,0.1);
+  sphere4.radius = 9.75; 
+  sphere4.color = vec3(0.7, 0.5, 0.3);
+  sphere4.color = vec3(0.1);
   sphere4.emissive = vec3(1.0f, 0.9f, 0.7f) * 100.0f;
   world.spheres[0] = sphere4;
-  world.spheres[1] = sphere;
-  world.spheres[2] = sphere2;
-  world.spheres[3] = sphere3;
+  world.spheres[3] = sphere2;
+  world.spheres[2] = sphere;
+  world.spheres[1] = sphere3;
+  // for(int i = 0; i < MAX_OBJECTS; i++){
+  //   int minZIndex = i;
+  //   for(int j = i; j < MAX_OBJECTS; j++){
+  //     if(world.spheres[j].center.z >= world.spheres[minZIndex].center.z) minZIndex = j;
+  //   }
+  //   Sphere tmp = world.spheres[i];
+  //   world.spheres[i] = world.spheres[minZIndex];
+  //   world.spheres[minZIndex] = tmp;
+  // }
+
 
 }
 #define MAX_RAY_BOUNCE 8
+uniform float u_stx;
+uniform float u_sty;
+uniform float u_stz;
+
+
 vec4 runSimulation(Ray camera){
   vec4 pixel = vec4(0);
   vec3 throughput = vec3(1);
   Ray currentRay = camera;
   for(int bounce = 0; bounce < MAX_RAY_BOUNCE; bounce ++){
     HitRecord record;
-    record.dist = MISSED_RAY;
+    record.dist = MAX_RAY_DIST;
     for(int i = 0; i < MAX_OBJECTS; i++){
-      hitSphere(currentRay, record, world.spheres[i]);
+      if(!hitSphere(currentRay, record, world.spheres[i])){
+        vec3 unit_direction = normalize(currentRay.direction);
+        float t = 0.5*(unit_direction.y + 1.0);
+        pixel *= vec4((1.0-t)*vec3(1.0, 1.0, 1.0) + t*vec3(0.5, 0.7, 1.0), 1);
+      }
     }
-    if(record.dist == MISSED_RAY) break; //No ray hit
+    if(record.dist == MAX_RAY_DIST) break; //No ray hit
+    currentRay.origin = record.collisionPoint;
 
-    currentRay.origin = (currentRay.origin + currentRay.direction * record.dist) + record.collisionNormal;
-    currentRay.direction = reflect(currentRay.direction, record.collisionNormal);
-    //currentRay.direction = normalize(record.collisionNormal + RandomUnitVector(rngState));
-    pixel += 0.5*vec4(record.albedo,1);//record.emissive * throughput
-    throughput *= record.albedo;
+    //LAMBERTIAN DIFFUSE
+    //currentRay.direction = currentRay.origin - (record.collisionNormal + random_in_hemisphere(record.collisionNormal));
+    //pixel += 0.5*vec4(record.albedo,1);
 
+    //METAL
+     vec3 reflected = reflect(currentRay.direction, record.collisionNormal) + vec3(u_stx, u_sty, u_stz);
+     if(dot(reflected, record.collisionNormal) > 0){
+       currentRay.direction = reflected;
+       pixel += 0.5*vec4(record.albedo,1);
+     }
 
 
   }
 
-  //Bounce the ray
   
 
   return pixel;
@@ -176,6 +209,7 @@ void main() {
   Ray camera;
   camera.origin = vec3(0, 0, -2);
   camera.direction = normalize(vec3(uv.x, uv.y, 1.0));
+  
 
   initWorld();
 
@@ -212,10 +246,16 @@ vec3 reflect(vec3 v, vec3 n) {
 }
 
 
-
-vec3 random_in_unit_sphere() {
+vec3 random_in_hemisphere(vec3 normal) {
+    vec3 in_unit_sphere = random_in_unit_sphere(rngState);
+    if (dot(in_unit_sphere, normal) > 0.0) // In the same hemisphere as the normal
+        return in_unit_sphere;
+    else
+        return -in_unit_sphere;
+}
+vec3 random_in_unit_sphere(uint state) {
     while (true) {
-        vec3 p = random();
+        vec3 p = vec3(RandomFloat01(state), RandomFloat01(state), RandomFloat01(state));
         p = p / length(p);
         if (p.x*p.x + p.y*p.y + p.z*p.z  >= 1) continue;
         return p;
@@ -245,11 +285,11 @@ precise float RandomFloat01(inout uint state)
      return float(wang_hash(state)) / 4294967296.0;
  }
 vec3 RandomUnitVector(inout uint state)
- {
-     precise float z = RandomFloat01(state) * 2.0f - 1.0f;
-     precise float a = RandomFloat01(state) * (2*3.14159);
-     precise float r = sqrt(1.0f - z * z);
-     precise float x = r * cos(a);
-     precise float y = r * sin(a);
-     return vec3(x, y, z);
- }
+{
+    precise float z = RandomFloat01(state) * 2.0f - 1.0f;
+    precise float a = RandomFloat01(state) * (2*3.14159);
+    precise float r = sqrt(1.0f - z * z);
+    precise float x = r * cos(a);
+    precise float y = r * sin(a);
+    return vec3(x, y, z);
+}
