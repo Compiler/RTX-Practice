@@ -185,7 +185,7 @@ vec4 runSimulation(Ray camera){
      vec3 reflected = reflect(currentRay.direction, record.collisionNormal) + vec3(u_stx, u_sty, u_stz);
      if(dot(reflected, record.collisionNormal) > 0){
        currentRay.direction = reflected;
-       pixel += 0.5*vec4(record.albedo,1);
+       pixel += 0.5*vec4(0.5*record.albedo,1);
      }
 
 
