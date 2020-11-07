@@ -1,4 +1,5 @@
 #pragma once
+#include <cstring>
 #include <Engine/Rendering/Window.h>
 #include <Engine/Rendering/ShaderProgram.h>
 #include <Engine/Tools/Startup/StartupSystems.h>
@@ -27,6 +28,7 @@ class RenderCore{
         void _renderRTX();
         unsigned int _vertexID, _bufferID;
     public:
+    int tex_w, tex_h;
         static uint8_t RENDER_MODE;
         void load();
         void update();

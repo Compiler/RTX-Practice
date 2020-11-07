@@ -8,7 +8,7 @@ void RenderCore::_setupCompute(){
     glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &work_grp_size[1]);
     glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &work_grp_size[2]);
        
-    int tex_w = work_grp_size[0], tex_h = 1024;
+    tex_w = work_grp_size[0], tex_h = 1024;
     float ratio = 16.0f/ 9.0f;
     tex_h = tex_w / ratio;
     glGenTextures(1, &_computeTexture);
@@ -20,6 +20,36 @@ void RenderCore::_setupCompute(){
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, tex_w, tex_h, 0, GL_RGBA, GL_FLOAT, NULL);
     glBindImageTexture(0, _computeTexture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+
+
+
+    /*
+    struct shader_data_t
+    {
+    float spherePositions[4];
+    } shader_data;
+    shader_data.spherePositions[0] = 4;
+    shader_data.spherePositions[1] = 4;
+    shader_data.spherePositions[2] = 4;
+    shader_data.spherePositions[3] = 4;
+    GLuint ssbo = 0;
+    glGenBuffers(1, &ssbo);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(shader_data), &shader_data, GL_DYNAMIC_COPY);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);
+    GLvoid* p = glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_WRITE_ONLY);
+    memcpy(p, &shader_data, sizeof(shader_data));
+    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+
+    GLuint block_index = glGetProgramResourceIndex(_compute.getShader(), GL_SHADER_STORAGE_BLOCK, "shader_data");
+    GLuint ssbo_binding_point_index = 2;
+    glShaderStorageBlockBinding(_compute.getShader(), block_index, ssbo_binding_point_index);
+    glDispatchCompute((GLuint)512, (GLuint)512, 1);
+    glShaderStorageBlockBinding(_compute.getShader(), block_index, 80);
+    GLuint binding_point_index = 80;
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding_point_index, ssbo);   */
 
 
 
@@ -106,18 +136,43 @@ void RenderCore::load(){
 
 
 void RenderCore::update(){
+
+    
+
     if(glfwWindowShouldClose(_window->getWindow())) _isRunning = 0;
 }
 
 void RenderCore::_renderCompute(){
+        static float zPosition = 0;
+        static float yPosition = 0;
+        static float xPosition = 0;
     {
         _compute.use();
-        glDispatchCompute((GLuint)512, (GLuint)512, 1);
+        static constexpr float DELTA = 0.025;
+        if(reach::InputManager::isKeyPressed(reach::KeyCodes::KEY_D))xPosition +=DELTA;
+        if(reach::InputManager::isKeyPressed(reach::KeyCodes::KEY_A))xPosition -=DELTA;
+        if(reach::InputManager::isKeyPressed(reach::KeyCodes::KEY_W))yPosition -=DELTA;
+        if(reach::InputManager::isKeyPressed(reach::KeyCodes::KEY_S))yPosition +=DELTA;
+        if(reach::InputManager::isKeyPressed(reach::KeyCodes::KEY_UP))zPosition -=DELTA;
+        if(reach::InputManager::isKeyPressed(reach::KeyCodes::KEY_DOWN))zPosition +=DELTA;
+        
+        REACH_LOG(zPosition);
+        _compute.uniform_set1Float("u_delta_x", xPosition);
+        _compute.uniform_set1Float("u_delta_y", yPosition);
+        _compute.uniform_set1Float("u_delta_z", zPosition);
+
+
+           
     }
+    glDispatchCompute((GLuint)tex_w, (GLuint)tex_h, 1);
     glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 
     _program.use();
     _program.uniform_set1Integer("textureVal", 0);
+
+
+    reach::InputManager::clear();
+    glfwPollEvents();
 
 }
 

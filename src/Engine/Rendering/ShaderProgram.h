@@ -27,6 +27,7 @@ namespace reach{
             void loadShader(const char* vertexFile, const char* fragFile);
             void loadShader(const char* vertexFile, const char* fragFile, const char* geomFile);
 
+            inline GLint getShader(){return _shaderProgram;}
             void use(){glUseProgram(_shaderProgram);}
 
 
