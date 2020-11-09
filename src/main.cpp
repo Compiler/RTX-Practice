@@ -7,16 +7,12 @@
 
 int main(){
 
-    //CoreLauncher launcherCore;
-    //launcherCore.launch("_core_Current_Image.ppm");
 
     
-
-    //Launcher launcher;
-    //launcher.launch("_Current_Image_.ppm");
     
     RenderCore core;
-    RenderCore::RENDER_MODE = RENDER_MODES::PARALLEL;
+    //RenderCore::RENDER_MODE = RENDER_MODES::PARALLEL;
+    RenderCore::RENDER_MODE = RENDER_MODES::RTX;
     core.load();
     while(core.isRunning()){
         core.update();

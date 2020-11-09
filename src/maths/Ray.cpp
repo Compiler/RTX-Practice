@@ -6,7 +6,7 @@
 Ray::Ray(){}
 
 
-Ray::Ray(const Point3& origin, const Vec3& direction): orig(origin), dir(direction){
+Ray::Ray(const Point3& origin, const Vec3& direction, double tme): orig(origin), dir(direction), time(tme){
 
 }
 

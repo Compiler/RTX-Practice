@@ -102,9 +102,11 @@ void RenderCore::_generalSetup(){
 
 }
 
+Launcher launcherCore;
 void RenderCore::_setupRTX(){
 
      
+    launcherCore.launch("_core_Current_Image.ppm");
 
     _rtx_textureID = reach::FileLoaderFactory::loadOpenGL_RTX_Texture();
 
@@ -184,9 +186,8 @@ void RenderCore::_renderCompute(){
 }
 
 void RenderCore::_renderRTX(){
-    // _program.use();
-    // glActiveTexture(GL_TEXTURE0); // activate the texture unit first before binding texture
-    // glBindTexture(GL_TEXTURE_2D, _computeTexture);
+    _program.use();
+    _program.uniform_set1Integer("textureVal", 0);
 
 }
 

@@ -71,7 +71,6 @@ World world;
 bool hitSphere(Ray ray, inout HitRecord record, Sphere sphere){
   precise float t = dot(sphere.center-ray.origin, ray.direction);
   vec3 collisionPoint = ray.origin + ray.direction*t;
-
   precise float y = length(sphere.center-collisionPoint);
   if(y < sphere.radius){
     float x = sqrt(sphere.radius*sphere.radius - y*y);
@@ -88,7 +87,7 @@ bool hitSphere(Ray ray, inout HitRecord record, Sphere sphere){
       record.albedo = sphere.color;
       record.emissive = sphere.emissive;
     }
-    else if(t2 > MIN_RAY_DIST && t2 < MAX_RAY_DIST){
+   else  if(t2 > MIN_RAY_DIST && t2 < MAX_RAY_DIST){
       collisionPoint = ray.origin + ray.direction*t2;
       vec3 N = collisionPoint - sphere.center;
       record.collisionNormal = normalize(collisionPoint - sphere.center);
@@ -136,7 +135,7 @@ void initWorld(){
   sphere4.center = vec3(0, 10, 1);
   sphere4.radius = 9.75; 
   sphere4.color = vec3(0.7, 0.5, 0.3);
-  sphere4.color = vec3(0.1);
+  sphere4.color = vec3(0.7);
   sphere4.emissive = vec3(1.0f, 0.9f, 0.7f) * 100.0f;
   world.spheres[0] = sphere4;
   world.spheres[3] = sphere2;
@@ -154,7 +153,7 @@ void initWorld(){
 
 
 }
-#define MAX_RAY_BOUNCE 200
+#define MAX_RAY_BOUNCE 8
 
 uniform float u_stx;
 uniform float u_sty;
@@ -168,6 +167,7 @@ vec4 runSimulation(Ray camera){
   vec3 unit_direction = normalize(currentRay.direction);
   float t = 0.5*(unit_direction.y + 1.0);
   pixel = vec4((1.0-t)*vec3(1.0, 1.0, 1.0) + t*vec3(0.5, 0.7, 1.0), 1);
+  vec4 colorAttenuation = vec4(1);
   bool hit;
   for(int bounce = 0; bounce < MAX_RAY_BOUNCE; bounce ++){
     HitRecord record;
@@ -190,15 +190,13 @@ vec4 runSimulation(Ray camera){
      vec3 reflected = reflect(currentRay.direction, record.collisionNormal) + vec3(u_stx, u_sty, u_stz);
      if(dot(reflected, record.collisionNormal) > 0){
        currentRay.direction = reflected;
-       pixel += 0.5*vec4(0.5*record.albedo,1);
+       //colorAttenuation *= vec4(record.albedo,1);
+       pixel = vec4(record.albedo,1);
      }
 
 
   }
 
-  if(pixel == vec4(0,0,0,0)){
-    
-  }
   return pixel;
 }
 

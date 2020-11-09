@@ -120,7 +120,13 @@ void Launcher::launch(const char* fileName){
     constexpr int SPP = 100;
     constexpr int PIXEL_DENSITY =   2;
 
-    Camera camera;
+    Point3 lookfrom(3,3,2);
+    Point3 lookat(0,0,-1);
+    Vec3 vup(0,1,0);
+    auto dist_to_focus = (lookfrom-lookat).length();
+    auto aperture = 2.0;
+
+    Camera camera(lookfrom, lookat, vup, 20, ASPECT_RATIO, aperture, dist_to_focus);
 
     FILE* file;
     file = fopen(fileName, "w+");
