@@ -2,6 +2,7 @@
 #include <Core.h>
 #include <memory>
 #include <maths/Vec3.h>
+#include <maths/AABB.h>
 #include <maths/Ray.h>
 
 class Material;
@@ -24,5 +25,6 @@ class Hittable{
 
     public:
         virtual bool hit(const Ray& r, double tMin, double tMax, HitRecord& record) const = 0;
+        virtual bool boundingBox(double time0, double time1, AABB& outputBox) const = 0;
 
 };

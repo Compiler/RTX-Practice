@@ -19,6 +19,7 @@ class HittableList : public Hittable{
         void clear();
         void add(shared_ptr<Hittable> object);
         virtual bool hit(const Ray& r, double tMin, double tMax, HitRecord& record) const;
+        virtual bool boundingBox(double time0, double time1, AABB& outputBox) const;
 
 
 };

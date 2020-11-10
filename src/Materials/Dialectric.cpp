@@ -18,7 +18,7 @@ bool Dialectric::scatter(const Ray& rayIn, const HitRecord& record, Color& atten
     else
         direction = refract(unit_direction, record.normal, refraction_ratio);
 
-    scatteredRay = Ray(record.point, direction);
+    scatteredRay = Ray(record.point, direction, rayIn.time);
     return true;
 }
 

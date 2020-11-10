@@ -112,7 +112,7 @@ void Launcher::launch(const char* fileName){
     //world = random_scene();
 
     constexpr double ASPECT_RATIO = 16.0/9.0;
-    constexpr int IMAGE_WIDTH = 400;
+    constexpr int IMAGE_WIDTH = 900;
     constexpr int IMAGE_HEIGHT = IMAGE_WIDTH / ASPECT_RATIO;
     Launcher::WIDTH = IMAGE_WIDTH;
     Launcher::HEIGHT = IMAGE_HEIGHT;
@@ -120,13 +120,13 @@ void Launcher::launch(const char* fileName){
     constexpr int SPP = 100;
     constexpr int PIXEL_DENSITY =   2;
 
-    Point3 lookfrom(3,3,2);
+    Point3 lookfrom(0,2,3);
     Point3 lookat(0,0,-1);
     Vec3 vup(0,1,0);
-    auto dist_to_focus = (lookfrom-lookat).length();
-    auto aperture = 2.0;
+    auto dist_to_focus = 10.0;
+    auto aperture = 0.1;
 
-    Camera camera(lookfrom, lookat, vup, 20, ASPECT_RATIO, aperture, dist_to_focus);
+    Camera camera(lookfrom, lookat, vup, 20, ASPECT_RATIO, aperture, dist_to_focus, 0, 1);
 
     FILE* file;
     file = fopen(fileName, "w+");
