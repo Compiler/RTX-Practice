@@ -26,18 +26,20 @@ vec3 RandomUnitVector(inout uint state);
 
 
 //data
-struct Metal{
-  float fuzz;
-
-};
-struct Sphere{
+struct MetalSphere{
   vec3 center;
   vec3 color;
   precise float radius;
   vec3 emissive;
   bool isMetal;
+};
 
-
+struct LambertianDiffuseSphere{
+  vec3 center;
+  vec3 color;
+  precise float radius;
+  vec3 emissive;
+  bool isMetal;
 };
 
 struct Ray{
@@ -52,7 +54,7 @@ struct Ray{
 #define MAX_RAY_DIST 1000000000
 #define MIN_RAY_DIST 0.001
 struct World{
-  Sphere[MAX_OBJECTS] spheres;
+  MetalSphere[MAX_OBJECTS] metalSpheres;
 
 };
 
@@ -68,7 +70,7 @@ struct HitRecord{
 World world;
 
 
-bool hitSphere(Ray ray, inout HitRecord record, Sphere sphere){
+bool hitSphere(Ray ray, inout HitRecord record, MetalSphere sphere){
   precise float t = dot(sphere.center-ray.origin, ray.direction);
   vec3 collisionPoint = ray.origin + ray.direction*t;
   precise float y = length(sphere.center-collisionPoint);
@@ -112,43 +114,42 @@ void initWorld(){
   precise float rad = 0.5;
   precise float spacing = 1;
   int count = 1;
-  Sphere sphere;
+  MetalSphere sphere;
   sphere.center = vec3(2 - spacing * count++, 0, 4);
   sphere.radius = rad; 
   sphere.color = vec3(0,1,0);
   sphere.emissive = vec3(0.0f, 0.0f, 0.0f);
 
-  Sphere sphere2;
+  MetalSphere sphere2;
   sphere2.center = vec3(2 - spacing * count++ + u_delta_x, 0+u_delta_y, 4+u_delta_z);//u_delta + 4
   sphere2.radius = rad; 
   sphere2.color = vec3(1,0,0);
   sphere2.emissive = vec3(0.0f, 0.0f, 0.0f);
 
 
-  Sphere sphere3;
+  MetalSphere sphere3;
   sphere3.center = vec3(2 - spacing * count++, 0, 4);
   sphere3.radius = rad; 
   sphere3.color = vec3(0,0,1);
   sphere3.emissive = vec3(0.0f, 0.0f, 0.0f);
 
-  Sphere sphere4;
+  MetalSphere sphere4;
   sphere4.center = vec3(0, 10, 1);
   sphere4.radius = 9.75; 
   sphere4.color = vec3(0.7, 0.5, 0.3);
-  sphere4.color = vec3(0.7);
   sphere4.emissive = vec3(1.0f, 0.9f, 0.7f) * 100.0f;
-  world.spheres[0] = sphere4;
-  world.spheres[3] = sphere2;
-  world.spheres[2] = sphere;
-  world.spheres[1] = sphere3;
+  world.metalSpheres[0] = sphere4;
+  world.metalSpheres[3] = sphere2;
+  world.metalSpheres[2] = sphere;
+  world.metalSpheres[1] = sphere3;
   // for(int i = 0; i < MAX_OBJECTS; i++){
   //   int minZIndex = i;
   //   for(int j = i; j < MAX_OBJECTS; j++){
-  //     if(world.spheres[j].center.z >= world.spheres[minZIndex].center.z) minZIndex = j;
+  //     if(world.metalSpheres[j].center.z >= world.metalSpheres[minZIndex].center.z) minZIndex = j;
   //   }
-  //   Sphere tmp = world.spheres[i];
-  //   world.spheres[i] = world.spheres[minZIndex];
-  //   world.spheres[minZIndex] = tmp;
+  //   Sphere tmp = world.metalSpheres[i];
+  //   world.metalSpheres[i] = world.metalSpheres[minZIndex];
+  //   world.metalSpheres[minZIndex] = tmp;
   // }
 
 
@@ -173,10 +174,10 @@ vec4 runSimulation(Ray camera){
     HitRecord record;
     record.dist = MAX_RAY_DIST;
     for(int i = 0; i < MAX_OBJECTS; i++){
-      if(!hitSphere(currentRay, record, world.spheres[i])){
+      if(!hitSphere(currentRay, record, world.metalSpheres[i])){
         vec3 unit_direction = normalize(currentRay.direction);
         float t = 0.5*(unit_direction.y + 1.0);
-        pixel *= vec4((1.0-t)*vec3(1.0, 1.0, 1.0) + t*vec3(0.5, 0.7, 1.0), 1);
+        pixel *= vec4((1.0-t)*vec3(1.0, 1.0, 1.0) + t*vec3(0.5, 0.7, 1.0) * throughput, 1);
       }else hit = true;
     }
     if(record.dist == MAX_RAY_DIST) break; //No ray hit
@@ -187,12 +188,13 @@ vec4 runSimulation(Ray camera){
     //pixel += 0.5*vec4(record.albedo,1);
 
     //METAL
-     vec3 reflected = reflect(currentRay.direction, record.collisionNormal) + vec3(u_stx, u_sty, u_stz);
+     vec3 reflected = reflect(currentRay.direction, record.collisionNormal) + (0.3 * vec3(u_stx, u_sty, u_stz));
      if(dot(reflected, record.collisionNormal) > 0){
        currentRay.direction = reflected;
        //colorAttenuation *= vec4(record.albedo,1);
-       pixel = vec4(record.albedo,1);
+       pixel = vec4(record.albedo* throughput,1) ;
      }
+     throughput *= vec3(0.75);
 
 
   }
@@ -208,7 +210,7 @@ void main() {
   // get index in global work group i.e x,y position
   ivec2 pixel_coords = ivec2(gl_GlobalInvocationID.xy);
   ivec2 dims = imageSize(img_output); // fetch image dimensions
-  vec2 jitter = vec2(RandomFloat01(rngState), RandomFloat01(rngState)) - 0.5f;
+  vec2 jitter = vec2(0);//vec2(RandomFloat01(rngState), RandomFloat01(rngState)) - 0.5f;
   vec2 uv = (pixel_coords+ jitter - 0.5 * dims) / dims.y;
   rngState= uint(uint(uv.x) * uint(1973) + uint(uv.y) * uint(9277) * uint(26699)) | uint(1);
   Ray camera;
