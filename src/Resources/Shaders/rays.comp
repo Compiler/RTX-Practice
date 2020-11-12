@@ -188,7 +188,7 @@ vec4 runSimulation(Ray camera){
     //pixel += 0.5*vec4(record.albedo,1);
 
     //METAL
-     vec3 reflected = reflect(currentRay.direction, record.collisionNormal) + (0.3 * vec3(u_stx, u_sty, u_stz));
+     vec3 reflected = reflect(currentRay.direction, record.collisionNormal) + (vec3(u_stx, u_sty, u_stz) * vec3(random_in_unit_sphere(rngState)));
      if(dot(reflected, record.collisionNormal) > 0){
        currentRay.direction = reflected;
        //colorAttenuation *= vec4(record.albedo,1);

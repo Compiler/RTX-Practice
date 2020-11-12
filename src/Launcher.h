@@ -10,6 +10,7 @@
 
 #include <RayHittables/Sphere.h>
 #include <RayHittables/HittableList.h>
+#include <RayHittables/BVHNode.h>
 
 #include <Materials/Metal.h>
 #include <Materials/Material.h>

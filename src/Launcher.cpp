@@ -70,6 +70,21 @@ Color RayColor(const Ray& r, const Hittable& world, int depth) {
     return (1.0-t)*Color(1.0, 1.0, 1.0) + t*Color(0.5, 0.7, 1.0);
 }
 
+Color RayColor(const Ray& r, const BVHNode& world, int depth) {
+    if(depth <= 0) return Color(0,0,0);
+    HitRecord rec;
+    if (world.hit(r, 0.001, _INFINITY_, rec)) {
+        Ray scattered;
+        Color attenuation;
+        if (rec.mat_ptr->scatter(r, rec, attenuation, scattered))
+            return attenuation * RayColor(scattered, world, depth-1);
+        return Color(0,0,0);
+    }
+    Vec3 unit_direction = unit_vector(r.direction());
+    auto t = 0.5*(unit_direction.y() + 1.0);
+    return (1.0-t)*Color(1.0, 1.0, 1.0) + t*Color(0.5, 0.7, 1.0);
+}
+
 double RayHitSphere(const Point3& SphereCenter, double SphereRadius, const Ray& r){
     Vec3 oc = r.origin() - SphereCenter;
     float a = r.direction().length_squared();
@@ -108,11 +123,12 @@ void Launcher::launch(const char* fileName){
     world.add(make_shared<Sphere>(Point3(-1.0,    0.0, -1.0),   0.5, Material_left));
     world.add(make_shared<Sphere>(Point3(-1.0,    0.0, -1.0),  -0.4, Material_left));
     world.add(make_shared<Sphere>(Point3( 1.0,    0.0, -1.0),   0.5, Material_right));
+    //BVHNode node(world, 0, 0);
 
     //world = random_scene();
 
     constexpr double ASPECT_RATIO = 16.0/9.0;
-    constexpr int IMAGE_WIDTH = 900;
+    constexpr int IMAGE_WIDTH = 400;
     constexpr int IMAGE_HEIGHT = IMAGE_WIDTH / ASPECT_RATIO;
     Launcher::WIDTH = IMAGE_WIDTH;
     Launcher::HEIGHT = IMAGE_HEIGHT;
@@ -141,6 +157,7 @@ void Launcher::launch(const char* fileName){
                 auto v = (y + random_double()) / (IMAGE_HEIGHT-1);
                 Ray r = camera.getRay(u, v);
                 pixelColor += RayColor(r, world, MAX_CHILD_RAYS);
+                //pixelColor += RayColor(r, node, MAX_CHILD_RAYS);
             }
             auto r = pixelColor.x();
             auto g = pixelColor.y();

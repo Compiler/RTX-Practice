@@ -160,8 +160,8 @@ void RenderCore::_renderCompute(){
         if(reach::InputManager::isKeyPressed(reach::KeyCodes::KEY_LEFT_SHIFT))zPosition -=DELTA;
         if(reach::InputManager::isKeyPressed(reach::KeyCodes::KEY_SPACE))zPosition +=DELTA;
 
-        if(reach::InputManager::isKeyPressed(reach::KeyCodes::KEY_EQUAL))u_st += 0.001;
-        if(reach::InputManager::isKeyPressed(reach::KeyCodes::KEY_MINUS))u_st -= 0.001;
+        if(reach::InputManager::isKeyPressed(reach::KeyCodes::KEY_EQUAL))u_st += 0.01;
+        if(reach::InputManager::isKeyPressed(reach::KeyCodes::KEY_MINUS))u_st -= 0.01;
         
         _compute.uniform_set1Float("u_delta_x", xPosition);
         _compute.uniform_set1Float("u_delta_y", yPosition);

@@ -10,8 +10,8 @@ int main(){
     
     
     RenderCore core;
-    RenderCore::RENDER_MODE = RENDER_MODES::PARALLEL;
-    //RenderCore::RENDER_MODE = RENDER_MODES::RTX;
+    //RenderCore::RENDER_MODE = RENDER_MODES::PARALLEL;
+    RenderCore::RENDER_MODE = RENDER_MODES::RTX;
     core.load();
     while(core.isRunning()){
         core.update();
