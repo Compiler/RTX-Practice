@@ -34,11 +34,12 @@ STARTUP_OBJS = $(OUT_DIR)/StartupSystems.o
 RENDERING_OBJS = $(OUT_DIR)/ShaderProgram.o $(OUT_DIR)/TextureManager.o $(OUT_DIR)/Window.o
 MATHS_OBJS = $(OUT_DIR)/Vec3.o $(OUT_DIR)/Camera.o $(OUT_DIR)/Ray.o $(OUT_DIR)/AABB.o
 HITTABLE_OBJS = $(OUT_DIR)/HittableList.o $(OUT_DIR)/Sphere.o $(OUT_DIR)/BVHNode.o
+TEXTURE_OBJS = $(OUT_DIR)/SolidColor.o
 CORE_OBJS = $(OUT_DIR)/Launcher.o
 RENDER_CORE_OBJS = $(OUT_DIR)/RenderCore.o
 MATERIAL_OBJS = $(OUT_DIR)/LambertianDiffuse.o $(OUT_DIR)/Metal.o $(OUT_DIR)/Dialectric.o
 
-OBJS = $(CORE_LAUNCHER_OBJS) $(CORE_OBJS) $(MATHS_OBJS) $(HITTABLE_OBJS) $(MATERIAL_OBJS) $(FILE_OBJS) $(INPUT_OBJS) $(SCENE_OBJS) $(STARTUP_OBJS) $(RENDERING_OBJS) $(RENDER_CORE_OBJS) $(CALLBACK_OBJS)
+OBJS = $(CORE_LAUNCHER_OBJS) $(CORE_OBJS) $(MATHS_OBJS) $(HITTABLE_OBJS) $(MATERIAL_OBJS) $(FILE_OBJS) $(INPUT_OBJS) $(SCENE_OBJS) $(STARTUP_OBJS) $(RENDERING_OBJS) $(RENDER_CORE_OBJS) $(CALLBACK_OBJS) $(TEXTURE_OBJS)
 
 
 LIB_OUT_OBJS = $(patsubst %.o, $(OUT_DIR)/%.o, $(LIB_OBJS))
@@ -82,6 +83,10 @@ $(INPUT_OBJS): $(OUT_DIR)/%.o: src/Engine/Tools/Input/%.cpp
 	$(ALL_SETTINGS) -c $< -o $@  
 
 $(SCENE_OBJS): $(OUT_DIR)/%.o: src/Engine/Tools/Scenes/%.cpp
+	$(ALL_SETTINGS) -c $< -o $@  
+
+
+$(TEXTURE_OBJS): $(OUT_DIR)/%.o: src/RayTextures/%.cpp
 	$(ALL_SETTINGS) -c $< -o $@  
 
 
