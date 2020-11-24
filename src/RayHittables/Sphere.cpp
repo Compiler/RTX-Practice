@@ -26,6 +26,7 @@ bool Sphere::hit(const Ray& r, double tMin, double tMax, HitRecord& record) cons
             record.point = r.at(record.t);
             record.normal = (record.point - _center) / _radius;
             record.setFaceNormal(r, (record.point - _center) / _radius);
+            getSphereUV(record.normal, record.u, record.v);
             return true;
         }
 
@@ -35,6 +36,7 @@ bool Sphere::hit(const Ray& r, double tMin, double tMax, HitRecord& record) cons
             record.point = r.at(record.t);
             record.normal = (record.point - _center) / _radius;
             record.setFaceNormal(r, (record.point - _center) / _radius);
+            getSphereUV(record.normal, record.u, record.v);
             return true;
         }
 
@@ -46,4 +48,13 @@ bool Sphere::hit(const Ray& r, double tMin, double tMax, HitRecord& record) cons
 bool Sphere::boundingBox(double time0, double time1, AABB& outputBox) const{
     outputBox = AABB(_center - Vec3(_radius), _center+Vec3(_radius));
     return true;
+}
+
+
+void Sphere::getSphereUV(const Point3& point, double& u, double& v){
+    double theta = acos(-point.y());
+    double phy = atan2(-point.z(), point.x()) + _PI_;
+    u = phy /( 2 * _PI_);
+    v = theta / _PI_;
+
 }

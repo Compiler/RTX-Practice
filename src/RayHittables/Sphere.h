@@ -8,6 +8,7 @@ class Sphere : public Hittable{
         Point3 _center;
         double _radius;
         std::shared_ptr<Material> _material;
+        static void getSphereUV(const Point3& point, double& u, double& v);
 
     public:
         Sphere();

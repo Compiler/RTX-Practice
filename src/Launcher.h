@@ -17,6 +17,10 @@
 #include <Materials/LambertianDiffuse.h>
 #include <Materials/Dialectric.h>
 
+
+#include <RayTextures/CheckerTexture.h>
+#include <RayTextures/SolidColor.h>
+
 #include <vector>
 
 

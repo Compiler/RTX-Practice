@@ -110,7 +110,9 @@ void Launcher::launch(const char* fileName){
     //      world.add(std::make_shared<Sphere>(Point3( i, -0.25, -0.25), 0.05, Material_back));
     //  }
     auto Material_ground = std::make_shared<LambertianDiffuse>(Color(0.2, 0.9, 0.3));
-    auto Material_center = std::make_shared<LambertianDiffuse>(Color(0.3, 0.2, 0.5));
+    //auto Material_center = std::make_shared<LambertianDiffuse>(Color(0.3, 0.2, 0.5));
+    auto checkered = std::make_shared<CheckerTexture>(Color(0.2, 0.3, 0.1), Color(0.9));
+    auto Material_center = std::make_shared<LambertianDiffuse>(checkered);
     auto Material_left   = make_shared<Dialectric>(1.5);
     auto Material_right  = std::make_shared<Metal>(Color(0.8, 0.6, 0.2), 0.0);
 
